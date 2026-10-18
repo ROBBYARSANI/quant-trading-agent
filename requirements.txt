@@ -1,0 +1,24 @@
+# Core Data & ML
+numpy>=1.24.0
+pandas>=2.0.0
+scikit-learn>=1.3.0
+xgboost>=2.0.0
+joblib>=1.3.0
+
+# Alpaca Trading SDK
+alpaca-py>=0.20.0
+
+# Environment & Utilities
+python-dotenv>=1.0.0
+requests>=2.31.0
+
+# Market Data (Indonesia & Global Real-Time Engine)
+yfinance>=0.2.38
+
+# NLP Sentiment Analysis (FinBERT)
+transformers>=4.30.0
+
+# Cloud Deployment & Space Sync
+huggingface-hub>=0.20.0
+
+

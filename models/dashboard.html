@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="30">
+    <title>Autonomous Quant Trading Agent - Live Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #090d16;
+            --card-bg: rgba(19, 26, 42, 0.75);
+            --border: rgba(255, 255, 255, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent: #38bdf8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--bg);
+            background-image: radial-gradient(circle at 10% 10%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
+                              radial-gradient(circle at 90% 90%, rgba(16, 185, 129, 0.05) 0%, transparent 40%);
+            color: var(--text-primary);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            padding: 32px 24px;
+        }
+        .container { max-width: 1300px; margin: 0 auto; }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 32px;
+        }
+        .brand { display: flex; align-items: center; gap: 12px; }
+        .pulse-dot {
+            width: 12px; height: 12px;
+            background: var(--success);
+            border-radius: 50%;
+            box-shadow: 0 0 12px var(--success);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        h1 { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+        .meta-text { color: var(--text-secondary); font-size: 13px; font-family: 'JetBrains Mono', monospace; }
+        .grid-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(16px);
+            border-radius: 16px;
+            padding: 20px;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .card:hover { border-color: rgba(56, 189, 248, 0.3); transform: translateY(-2px); }
+        .card-label { font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px; }
+        .card-value { font-size: 26px; font-weight: 800; margin-top: 8px; font-family: 'JetBrains Mono', monospace; }
+        .card-sub { font-size: 12px; margin-top: 6px; color: var(--text-secondary); }
+
+        /* Live Market Scanner & AI Telemetry Styles */
+        .scanner-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(16px);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+        .scanner-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+        .scanner-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 18px;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .scanner-card:hover {
+            border-color: rgba(56, 189, 248, 0.3);
+            transform: translateY(-2px);
+        }
+        .scanner-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .scanner-symbol {
+            font-size: 15px;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-primary);
+        }
+        .scanner-price {
+            font-size: 22px;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent);
+            margin-bottom: 12px;
+        }
+        .prob-bar-container {
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 6px;
+            height: 8px;
+            overflow: hidden;
+            margin: 6px 0 10px 0;
+            position: relative;
+        }
+        .prob-bar {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.4s ease;
+        }
+        .prob-bar.above {
+            background: linear-gradient(90deg, #10b981, #34d399);
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+        }
+        .prob-bar.below {
+            background: linear-gradient(90deg, #64748b, #94a3b8);
+        }
+        .telemetry-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+        }
+        .telemetry-val {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .section-title {
+            font-size: 18px; font-weight: 700; margin-bottom: 16px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            margin-bottom: 32px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: left;
+        }
+        th {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 14px 18px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border);
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+        td {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        tr:last-child td { border-bottom: none; }
+        .badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .badge-buy { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .badge-sell { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .badge-success { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
+        .badge-neutral { background: rgba(148, 163, 184, 0.1); color: #94a3b8; border: 1px solid var(--border); }
+        footer {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="brand">
+                <div class="pulse-dot"></div>
+                <div>
+                    <h1>Autonomous Quant Trading Agent</h1>
+                    <div class="meta-text">Standalone Indonesia-Ready Crypto Paper Broker & Machine Learning Engine</div>
+                </div>
+            </div>
+            <div style="text-align: right;">
+                <div class="meta-text">LAST REFRESH: 2026-10-18 16:12:03 UTC</div>
+                <div class="meta-text" style="color: #a78bfa; margin-top: 4px;">SELF-LEARNING AI: ACCEPTED (2026-10-18 16:10 UTC &bull; 5 Penalties)</div>
+                <div class="meta-text" style="color: var(--success); margin-top: 4px;">CIRCUIT BREAKER: ARMED (-3.0%)</div>
+            </div>
+        </header>
+
+        <div class="grid-stats">
+            <div class="card">
+                <div class="card-label">Total Portfolio Equity</div>
+                <div class="card-value">$99,384.76</div>
+                <div class="card-sub">Cash: $99,384.76</div>
+            </div>
+            <div class="card">
+                <div class="card-label">Today's Performance</div>
+                <div class="card-value" style="color: #ef4444;">-0.62%</div>
+                <div class="card-sub">Day Start: $100,000.00</div>
+            </div>
+            <div class="card">
+                <div class="card-label">Unrealized PnL</div>
+                <div class="card-value" style="color: #10b981;">
+                    $+0.00
+                </div>
+                <div class="card-sub">Active Positions: 0</div>
+            </div>
+            <div class="card">
+                <div class="card-label">Win Rate / Executions</div>
+                <div class="card-value">0.0%</div>
+                <div class="card-sub">0 Wins / 1 Total Trades</div>
+            </div>
+        </div>
+
+        <!-- Live Market Scanner & AI Telemetry Panel -->
+        <div class="scanner-panel">
+            <div class="section-title" style="margin-bottom: 0;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div class="pulse-dot" style="width: 8px; height: 8px; background: #38bdf8; box-shadow: 0 0 8px #38bdf8;"></div>
+                    <span>Live Market Scanner &amp; AI Telemetry (BTC, ETH, SOL)</span>
+                </div>
+                <span class="meta-text" id="telemetry-time">Thresh: 54% | Half-Kelly | Last Retrain: 2026-10-18 16:10 UTC (ACCEPTED &bull; 2 Trades Replayed)</span>
+            </div>
+            <div class="scanner-grid" id="scanner-grid">
+                
+            <div class="scanner-card" id="card-BTC-USD">
+                <div class="scanner-header">
+                    <span class="scanner-symbol">BTC-USD</span>
+                    <span class="badge badge-neutral" id="badge-BTC-USD">HOLD</span>
+                </div>
+                <div class="scanner-price" id="price-BTC-USD">$81,025.21</div>
+
+                <div class="telemetry-row">
+                    <span>XGBoost Win Prob</span>
+                    <span class="telemetry-val" id="prob-BTC-USD">32.0%</span>
+                </div>
+                <div class="prob-bar-container">
+                    <div class="prob-bar below" id="bar-BTC-USD" style="width: 31.979999999999997%;"></div>
+                </div>
+
+                <div class="telemetry-row">
+                    <span>FinBERT Sentiment</span>
+                    <span class="telemetry-val" style="color: #ef4444;" id="sent-BTC-USD">
+                        -0.20 (Negatif)
+                    </span>
+                </div>
+                <div class="telemetry-row">
+                    <span>System State</span>
+                    <span class="telemetry-val" style="color: #94a3b8;" id="gate-BTC-USD">HOLD (PRESERVING CASH)</span>
+                </div>
+            </div>
+            
+            <div class="scanner-card" id="card-ETH-USD">
+                <div class="scanner-header">
+                    <span class="scanner-symbol">ETH-USD</span>
+                    <span class="badge badge-neutral" id="badge-ETH-USD">HOLD</span>
+                </div>
+                <div class="scanner-price" id="price-ETH-USD">$2,369.95</div>
+
+                <div class="telemetry-row">
+                    <span>XGBoost Win Prob</span>
+                    <span class="telemetry-val" id="prob-ETH-USD">31.3%</span>
+                </div>
+                <div class="prob-bar-container">
+                    <div class="prob-bar below" id="bar-ETH-USD" style="width: 31.31%;"></div>
+                </div>
+
+                <div class="telemetry-row">
+                    <span>FinBERT Sentiment</span>
+                    <span class="telemetry-val" style="color: #ef4444;" id="sent-ETH-USD">
+                        -0.40 (Negatif)
+                    </span>
+                </div>
+                <div class="telemetry-row">
+                    <span>System State</span>
+                    <span class="telemetry-val" style="color: #94a3b8;" id="gate-ETH-USD">HOLD (PRESERVING CASH)</span>
+                </div>
+            </div>
+            
+            <div class="scanner-card" id="card-SOL-USD">
+                <div class="scanner-header">
+                    <span class="scanner-symbol">SOL-USD</span>
+                    <span class="badge badge-neutral" id="badge-SOL-USD">HOLD</span>
+                </div>
+                <div class="scanner-price" id="price-SOL-USD">$101.96</div>
+
+                <div class="telemetry-row">
+                    <span>XGBoost Win Prob</span>
+                    <span class="telemetry-val" id="prob-SOL-USD">35.3%</span>
+                </div>
+                <div class="prob-bar-container">
+                    <div class="prob-bar below" id="bar-SOL-USD" style="width: 35.32%;"></div>
+                </div>
+
+                <div class="telemetry-row">
+                    <span>FinBERT Sentiment</span>
+                    <span class="telemetry-val" style="color: #94a3b8;" id="sent-SOL-USD">
+                        -0.10 (Netral)
+                    </span>
+                </div>
+                <div class="telemetry-row">
+                    <span>System State</span>
+                    <span class="telemetry-val" style="color: #94a3b8;" id="gate-SOL-USD">HOLD (PRESERVING CASH)</span>
+                </div>
+            </div>
+            
+            </div>
+        </div>
+
+        <div class="section-title">
+            <span>Active Cryptocurrency Positions</span>
+            <span class="meta-text">0 Tracked</span>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Position Qty</th>
+                        <th>Entry Price</th>
+                        <th>Live Price</th>
+                        <th>Stop Loss</th>
+                        <th>Take Profit</th>
+                        <th>Trailing Breakeven</th>
+                        <th>Unrealized Return</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="8" style="text-align: center; color: #64748b; padding: 24px;">No active crypto positions. Cash reserves ready.</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section-title">
+            <span>Transaction Ledger & Execution History</span>
+            <span class="meta-text">Last 15 Executions</span>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Timestamp (UTC)</th>
+                        <th>Symbol</th>
+                        <th>Order Action</th>
+                        <th>Execution Price</th>
+                        <th>Units</th>
+                        <th>Gross Value</th>
+                        <th>Fee (0.15%)</th>
+                        <th>Realized PnL</th>
+                        <th>Exit Barrier Reason</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                <tr>
+                    <td>2026-10-18 16:11:51</td>
+                    <td><strong>BTC-USD</strong></td>
+                    <td><span class="badge badge-sell">SELL - STOP_LOSS</span></td>
+                    <td>$81,025.21</td>
+                    <td>0.6113</td>
+                    <td>$49,530.71</td>
+                    <td>$74.30</td>
+                    <td style="color: #ef4444; font-weight: bold;">-615.24 (-0.93%)</td>
+                    <td><span class="badge badge-neutral">STOP_LOSS</span></td>
+                </tr>
+                
+                <tr>
+                    <td>2026-10-18 04:08:56</td>
+                    <td><strong>BTC-USD</strong></td>
+                    <td><span class="badge badge-buy">BUY</span></td>
+                    <td>$81,787.43</td>
+                    <td>0.6113</td>
+                    <td>$49,996.66</td>
+                    <td>$74.99</td>
+                    <td style="color: #94a3b8; font-weight: bold;">0.00 (0.00%)</td>
+                    <td><span class="badge badge-neutral">SIGNAL_ENTRY</span></td>
+                </tr>
+                
+                </tbody>
+            </table>
+        </div>
+
+        <footer>
+            Autonomous Quant Trading Agent &bull; Triple-Barrier XGBoost &bull; Fractional Kelly &bull; FinBERT NLP &bull; Zero External API Key Required
+        </footer>
+    </div>
+
+    <script>
+        async function fetchTelemetry() {
+            try {
+                const res = await fetch('latest_telemetry.json?nocache=' + Date.now());
+                if (!res.ok) return;
+                const data = await res.json();
+                if (!data || !data.assets) return;
+
+                for (const [sym, info] of Object.entries(data.assets)) {
+                    const priceEl = document.getElementById('price-' + sym);
+                    const probEl = document.getElementById('prob-' + sym);
+                    const barEl = document.getElementById('bar-' + sym);
+                    const badgeEl = document.getElementById('badge-' + sym);
+                    const sentEl = document.getElementById('sent-' + sym);
+
+                    if (priceEl && info.price) {
+                        priceEl.textContent = '$' + Number(info.price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    }
+                    if (probEl && info.win_prob !== undefined) {
+                        const probPct = (info.win_prob * 100).toFixed(1);
+                        probEl.textContent = probPct + '%';
+                        if (barEl) {
+                            barEl.style.width = Math.min(Math.max(probPct, 5), 100) + '%';
+                            if (info.win_prob >= (info.threshold || 0.54)) {
+                                barEl.className = 'prob-bar above';
+                            } else {
+                                barEl.className = 'prob-bar below';
+                            }
+                        }
+                    }
+                    if (badgeEl && info.signal) {
+                        badgeEl.textContent = info.signal;
+                        badgeEl.className = 'badge ' + (info.signal === 'BUY' ? 'badge-buy' : 'badge-neutral');
+                    }
+                    if (sentEl && info.sentiment_score !== undefined) {
+                        const score = Number(info.sentiment_score);
+                        const label = info.sentiment_label || (score > 0.15 ? 'Positif' : (score < -0.15 ? 'Negatif' : 'Netral'));
+                        sentEl.textContent = (score >= 0 ? '+' : '') + score.toFixed(2) + ' (' + label + ')';
+                        sentEl.style.color = score > 0.15 ? '#10b981' : (score < -0.15 ? '#ef4444' : '#94a3b8');
+                    }
+                }
+                const timeEl = document.getElementById('telemetry-time');
+                if (timeEl && data.timestamp) {
+                    timeEl.textContent = 'Last Scan: ' + new Date(data.timestamp).toLocaleTimeString() + ' | Threshold: 54%';
+                }
+            } catch (err) {
+                console.debug('Telemetry auto-refresh error:', err);
+            }
+        }
+        setInterval(fetchTelemetry, 30000);
+    </script>
+</body>
+</html>
