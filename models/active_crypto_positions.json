@@ -1,12 +1,23 @@
 {
+  "BTC-USD": {
+    "symbol": "BTC-USD",
+    "entry_price": 81934.22,
+    "qty": 0.6132,
+    "stop_loss_price": 81446.57,
+    "take_profit_price": 82909.51,
+    "atr": 325.1,
+    "entry_timestamp": "2026-10-18T23:33:27.772293+00:00",
+    "max_hold_hours": 24,
+    "breakeven_triggered": false
+  },
   "SOL-USD": {
     "symbol": "SOL-USD",
-    "entry_price": 101.36,
-    "qty": 490.2563,
-    "stop_loss_price": 100.17,
-    "take_profit_price": 103.75,
-    "atr": 0.8,
-    "entry_timestamp": "2026-10-18T21:29:39.639449+00:00",
+    "entry_price": 103.91,
+    "qty": 473.1326,
+    "stop_loss_price": 102.56,
+    "take_profit_price": 106.62,
+    "atr": 0.9,
+    "entry_timestamp": "2026-10-18T23:33:29.518961+00:00",
     "max_hold_hours": 24,
     "breakeven_triggered": false
   }
