@@ -20,5 +20,16 @@
     "entry_timestamp": "2026-10-23T05:12:14.566122+00:00",
     "max_hold_hours": 24,
     "breakeven_triggered": false
+  },
+  "ETH-USD": {
+    "symbol": "ETH-USD",
+    "entry_price": 2397.36,
+    "qty": 0.7409,
+    "stop_loss_price": 2375.28,
+    "take_profit_price": 2441.52,
+    "atr": 14.72,
+    "entry_timestamp": "2026-10-23T19:10:40.592971+00:00",
+    "max_hold_hours": 24,
+    "breakeven_triggered": false
   }
 }
