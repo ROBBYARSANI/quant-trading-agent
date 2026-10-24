@@ -1,1 +1,13 @@
-{}
+{
+  "BTC-USD": {
+    "symbol": "BTC-USD",
+    "entry_price": 80403.24,
+    "qty": 1.1892,
+    "stop_loss_price": 79842.26,
+    "take_profit_price": 81525.2,
+    "atr": 373.99,
+    "entry_timestamp": "2026-10-24T19:13:39.350860+00:00",
+    "max_hold_hours": 24,
+    "breakeven_triggered": false
+  }
+}
