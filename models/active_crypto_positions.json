@@ -25,11 +25,11 @@
     "symbol": "SOL-USD",
     "entry_price": 100.83,
     "qty": 16.9443,
-    "stop_loss_price": 99.78,
+    "stop_loss_price": 100.83,
     "take_profit_price": 102.93,
     "atr": 0.7,
     "entry_timestamp": "2026-10-27T19:32:09.480953+00:00",
     "max_hold_hours": 24,
-    "breakeven_triggered": false
+    "breakeven_triggered": true
   }
 }
