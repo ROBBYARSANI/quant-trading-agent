@@ -1,13 +1,13 @@
 {
-  "ETH-USD": {
-    "symbol": "ETH-USD",
-    "entry_price": 2264.57,
-    "qty": 39.612,
-    "stop_loss_price": 2264.57,
-    "take_profit_price": 2289.68,
-    "atr": 8.37,
-    "entry_timestamp": "2026-11-01T07:29:43.854954+00:00",
+  "SOL-USD": {
+    "symbol": "SOL-USD",
+    "entry_price": 94.53,
+    "qty": 972.0812,
+    "stop_loss_price": 93.54,
+    "take_profit_price": 96.51,
+    "atr": 0.66,
+    "entry_timestamp": "2026-11-02T08:59:03.919278+00:00",
     "max_hold_hours": 24,
-    "breakeven_triggered": true
+    "breakeven_triggered": false
   }
 }
