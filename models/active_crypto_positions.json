@@ -3,11 +3,11 @@
     "symbol": "ETH-USD",
     "entry_price": 2264.57,
     "qty": 39.612,
-    "stop_loss_price": 2252.02,
+    "stop_loss_price": 2264.57,
     "take_profit_price": 2289.68,
     "atr": 8.37,
     "entry_timestamp": "2026-11-01T07:29:43.854954+00:00",
     "max_hold_hours": 24,
-    "breakeven_triggered": false
+    "breakeven_triggered": true
   }
 }
