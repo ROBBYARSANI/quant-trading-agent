@@ -1,11 +1,11 @@
 {
-  "cash": 2628.583602071594,
-  "equity": 283381.9,
+  "cash": 264993.4584252697,
+  "equity": 264993.46,
   "day_start_equity": 283669.26,
   "last_reset_date": "2026-11-05",
   "created_at": "2026-10-17T17:13:25.745773+00:00",
-  "updated_at": "2026-11-05T09:41:43.207775+00:00",
-  "total_trades": 34,
+  "updated_at": "2026-11-05T17:39:27.616602+00:00",
+  "total_trades": 36,
   "winning_trades": 14,
-  "losing_trades": 20
+  "losing_trades": 22
 }
