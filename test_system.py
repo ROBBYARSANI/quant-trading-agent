@@ -45,10 +45,13 @@ from data_pipeline import (
 )
 from model_engine import (
     QuantModel,
+    _append_retrain_history,
     apply_experience_replay,
+    count_closed_trades,
     create_triple_barrier_labels,
     extract_trade_feedback,
     load_retrain_history,
+    load_retrain_metadata,
 )
 from risk_allocator import calculate_optimal_allocation
 from backtester import FastBacktester
@@ -418,6 +421,105 @@ class TestQuantitativeTradingAgent(unittest.TestCase):
         self.assertIsInstance(history, list)
         self.assertGreaterEqual(len(history), 1)
         self.assertIn("experience_replay", history[-1])
+
+    def test_10_cloud_auto_retrain_age_and_trade_triggers(self):
+        """
+        Validates cloud auto-retraining triggers:
+        1. Age detection uses JSON timestamps, bypassing Git checkout mtime reset.
+        2. Closed trade accumulation triggers retrain (>= 10 new trades) regardless of model age.
+        3. Gatekeeper rejection updates last_attempt_timestamp to prevent infinite retrain loops.
+        """
+        hist_path = Path(self.temp_dir) / "test_retrain_history.json"
+        trades_path = Path(self.temp_dir) / "test_trade_history.csv"
+        model_file = Path(self.temp_dir) / "test_fresh_model.joblib"
+
+        # Create a dummy model file with current file mtime (simulating git checkout resetting mtime)
+        with open(model_file, "wb") as f:
+            f.write(b"dummy_model_bytes")
+
+        # 1. Test Age Detection with 10-day-old retrain record
+        old_dt = datetime.now(timezone.utc) - timedelta(days=10)
+        old_record = {
+            "symbol": "BTC-USD",
+            "timestamp": old_dt.isoformat(),
+            "status": "ACCEPTED",
+            "total_closed_trades": 5,
+        }
+        _append_retrain_history(old_record, history_file=hist_path)
+
+        meta = load_retrain_metadata(hist_path)
+        self.assertEqual(meta["last_status"], "ACCEPTED")
+        self.assertEqual(meta["total_closed_trades"], 5)
+
+        model = QuantModel(
+            confidence_threshold=CONFIDENCE_THRESHOLD,
+            model_path=str(model_file),
+            symbol="BTC-USD",
+        )
+
+        # Model age should be ~10 days, NOT 0 days from file mtime
+        age = model.get_model_age_days(history_file=hist_path)
+        self.assertGreaterEqual(age, 9.9)
+
+        # Retrain is due because age (10 days) >= max_age_days (7 days)
+        self.assertTrue(model.is_retrain_due(max_age_days=7, retrain_history_file=hist_path, trade_history_file=trades_path))
+
+        # 2. Update retrain history to be fresh (1 hour old, age ~0.04 days)
+        recent_dt = datetime.now(timezone.utc) - timedelta(hours=1)
+        recent_record = {
+            "symbol": "BTC-USD",
+            "timestamp": recent_dt.isoformat(),
+            "status": "ACCEPTED",
+            "total_closed_trades": 5,
+        }
+        _append_retrain_history(recent_record, history_file=hist_path)
+
+        # Age is now ~0.04 days
+        age_recent = model.get_model_age_days(history_file=hist_path)
+        self.assertLess(age_recent, 0.5)
+
+        # Create mock trades CSV with 5 closed trades (same count as baseline -> 0 new trades)
+        with open(trades_path, "w", encoding="utf-8") as f:
+            f.write("timestamp,symbol,action,price,qty,gross_val,fee,net_pnl,net_pnl_pct,reason\n")
+            for i in range(5):
+                f.write(f"2026-11-0{i+1} 10:00:00,BTC-USD,BUY,50000.00,0.1,5000.00,7.50,0.00,0.00%,ENTRY\n")
+                f.write(f"2026-11-0{i+1} 12:00:00,BTC-USD,SELL - TAKE_PROFIT,52000.00,0.1,5200.00,7.80,184.70,3.69%,TP\n")
+
+        self.assertEqual(count_closed_trades(trades_path), 5)
+        # Not due: age < 7 and new trades = 0 < 10
+        self.assertFalse(model.is_retrain_due(max_age_days=7, min_new_trades=10, retrain_history_file=hist_path, trade_history_file=trades_path))
+
+        # 3. Add 10 more closed trades to trades CSV (total 15 closed trades -> 10 new trades)
+        with open(trades_path, "a", encoding="utf-8") as f:
+            for i in range(5, 15):
+                f.write(f"2026-11-06 {i}:00:00,BTC-USD,BUY,50000.00,0.1,5000.00,7.50,0.00,0.00%,ENTRY\n")
+                f.write(f"2026-11-06 {i}:30:00,BTC-USD,SELL - STOP_LOSS,49000.00,0.1,4900.00,7.35,-114.85,-2.30%,SL\n")
+
+        self.assertEqual(count_closed_trades(trades_path), 15)
+        # Due now: new trades (15 - 5 = 10) >= min_new_trades (10), even though age < 7 days
+        self.assertTrue(model.is_retrain_due(max_age_days=7, min_new_trades=10, retrain_history_file=hist_path, trade_history_file=trades_path))
+
+        # 4. Test Gatekeeper Rejection Loop Prevention
+        rejected_dt = datetime.now(timezone.utc)
+        rejected_record = {
+            "symbol": "BTC-USD",
+            "timestamp": rejected_dt.isoformat(),
+            "status": "REJECTED_METRICS_REGRESSION",
+            "total_closed_trades": 15,
+        }
+        _append_retrain_history(rejected_record, history_file=hist_path)
+
+        meta_after_reject = load_retrain_metadata(hist_path)
+        self.assertEqual(meta_after_reject["last_status"], "REJECTED_METRICS_REGRESSION")
+        # last_attempt_timestamp updated to rejected_dt
+        self.assertEqual(meta_after_reject["last_attempt_timestamp"], rejected_dt.isoformat())
+        # last_accepted_timestamp remains the previous accepted timestamp
+        self.assertEqual(meta_after_reject["last_accepted_timestamp"], recent_dt.isoformat())
+        # total_closed_trades updated to 15
+        self.assertEqual(meta_after_reject["total_closed_trades"], 15)
+
+        # Now is_retrain_due should be False: attempt is fresh and new trades (15 - 15 = 0) < 10
+        self.assertFalse(model.is_retrain_due(max_age_days=7, min_new_trades=10, retrain_history_file=hist_path, trade_history_file=trades_path))
 
 
 if __name__ == "__main__":

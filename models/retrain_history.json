@@ -1,325 +1,529 @@
-[
-  {
-    "timestamp": "2026-10-18T04:03:57.544639+00:00",
-    "symbol": "BTC-USD",
-    "status": "ACCEPTED",
-    "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5190 vs Old: 0.5190)",
-    "metrics": {
-      "new_roc_auc": 0.519,
-      "old_roc_auc": 0.519,
-      "new_precision": 0.3448,
-      "old_precision": 0.3448,
-      "confident_trade_signals": 116,
-      "confident_win_rate_pct": 34.48
+{
+  "last_attempt_timestamp": "2026-11-08T06:45:47.043461+00:00",
+  "last_accepted_timestamp": "2026-11-08T06:45:47.043461+00:00",
+  "last_status": "ACCEPTED",
+  "total_closed_trades": 37,
+  "history": [
+    {
+      "timestamp": "2026-10-18T04:03:57.544639+00:00",
+      "symbol": "BTC-USD",
+      "status": "ACCEPTED",
+      "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5190 vs Old: 0.5190)",
+      "metrics": {
+        "new_roc_auc": 0.519,
+        "old_roc_auc": 0.519,
+        "new_precision": 0.3448,
+        "old_precision": 0.3448,
+        "confident_trade_signals": 116,
+        "confident_win_rate_pct": 34.48
+      },
+      "experience_replay": {
+        "trades_matched": 0,
+        "penalties_3x": 0,
+        "boosts_1_5x": 0
+      }
     },
-    "experience_replay": {
-      "trades_matched": 0,
-      "penalties_3x": 0,
-      "boosts_1_5x": 0
-    }
-  },
-  {
-    "timestamp": "2026-10-18T04:03:57.884667+00:00",
-    "symbol": "BTC-USD",
-    "status": "ACCEPTED",
-    "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5190 vs Old: 0.5190)",
-    "metrics": {
-      "new_roc_auc": 0.519,
-      "old_roc_auc": 0.519,
-      "new_precision": 0.3448,
-      "old_precision": 0.3448,
-      "confident_trade_signals": 116,
-      "confident_win_rate_pct": 34.48
+    {
+      "timestamp": "2026-10-18T04:03:57.884667+00:00",
+      "symbol": "BTC-USD",
+      "status": "ACCEPTED",
+      "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5190 vs Old: 0.5190)",
+      "metrics": {
+        "new_roc_auc": 0.519,
+        "old_roc_auc": 0.519,
+        "new_precision": 0.3448,
+        "old_precision": 0.3448,
+        "confident_trade_signals": 116,
+        "confident_win_rate_pct": 34.48
+      },
+      "experience_replay": {
+        "trades_matched": 0,
+        "penalties_3x": 0,
+        "boosts_1_5x": 0
+      }
     },
-    "experience_replay": {
-      "trades_matched": 0,
-      "penalties_3x": 0,
-      "boosts_1_5x": 0
-    }
-  },
-  {
-    "timestamp": "2026-10-18T04:08:05.602791+00:00",
-    "symbol": "BTC-USD",
-    "status": "ACCEPTED",
-    "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5190 vs Old: 0.5190)",
-    "metrics": {
-      "new_roc_auc": 0.519,
-      "old_roc_auc": 0.519,
-      "new_precision": 0.3448,
-      "old_precision": 0.3448,
-      "confident_trade_signals": 116,
-      "confident_win_rate_pct": 34.48
+    {
+      "timestamp": "2026-10-18T04:08:05.602791+00:00",
+      "symbol": "BTC-USD",
+      "status": "ACCEPTED",
+      "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5190 vs Old: 0.5190)",
+      "metrics": {
+        "new_roc_auc": 0.519,
+        "old_roc_auc": 0.519,
+        "new_precision": 0.3448,
+        "old_precision": 0.3448,
+        "confident_trade_signals": 116,
+        "confident_win_rate_pct": 34.48
+      },
+      "experience_replay": {
+        "trades_matched": 0,
+        "penalties_3x": 0,
+        "boosts_1_5x": 0
+      }
     },
-    "experience_replay": {
-      "trades_matched": 0,
-      "penalties_3x": 0,
-      "boosts_1_5x": 0
-    }
-  },
-  {
-    "timestamp": "2026-10-18T04:08:06.064134+00:00",
-    "symbol": "BTC-USD",
-    "status": "ACCEPTED",
-    "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5190 vs Old: 0.5190)",
-    "metrics": {
-      "new_roc_auc": 0.519,
-      "old_roc_auc": 0.519,
-      "new_precision": 0.3448,
-      "old_precision": 0.3448,
-      "confident_trade_signals": 116,
-      "confident_win_rate_pct": 34.48
+    {
+      "timestamp": "2026-10-18T04:08:06.064134+00:00",
+      "symbol": "BTC-USD",
+      "status": "ACCEPTED",
+      "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5190 vs Old: 0.5190)",
+      "metrics": {
+        "new_roc_auc": 0.519,
+        "old_roc_auc": 0.519,
+        "new_precision": 0.3448,
+        "old_precision": 0.3448,
+        "confident_trade_signals": 116,
+        "confident_win_rate_pct": 34.48
+      },
+      "experience_replay": {
+        "trades_matched": 0,
+        "penalties_3x": 0,
+        "boosts_1_5x": 0
+      }
     },
-    "experience_replay": {
-      "trades_matched": 0,
-      "penalties_3x": 0,
-      "boosts_1_5x": 0
-    }
-  },
-  {
-    "timestamp": "2026-10-18T04:08:08.852891+00:00",
-    "symbol": "BTC-USD",
-    "status": "ACCEPTED",
-    "reason": "ACCEPTED: Initial calibration or improved performance",
-    "metrics": {
-      "new_roc_auc": 0.5243,
-      "old_roc_auc": null,
-      "new_precision": 0.3277,
-      "old_precision": null,
-      "confident_trade_signals": 119,
-      "confident_win_rate_pct": 32.77
+    {
+      "timestamp": "2026-10-18T04:08:08.852891+00:00",
+      "symbol": "BTC-USD",
+      "status": "ACCEPTED",
+      "reason": "ACCEPTED: Initial calibration or improved performance",
+      "metrics": {
+        "new_roc_auc": 0.5243,
+        "old_roc_auc": null,
+        "new_precision": 0.3277,
+        "old_precision": null,
+        "confident_trade_signals": 119,
+        "confident_win_rate_pct": 32.77
+      },
+      "experience_replay": {
+        "trades_matched": 2,
+        "penalties_3x": 5,
+        "boosts_1_5x": 5
+      }
     },
-    "experience_replay": {
-      "trades_matched": 2,
-      "penalties_3x": 5,
-      "boosts_1_5x": 5
-    }
-  },
-  {
-    "timestamp": "2026-10-18T04:08:19.820681+00:00",
-    "symbol": "BTC-USD",
-    "status": "ACCEPTED",
-    "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5830 vs Old: 0.4891)",
-    "metrics": {
-      "new_roc_auc": 0.583,
-      "old_roc_auc": 0.4891,
-      "new_precision": 0.2,
-      "old_precision": 0.0,
-      "confident_trade_signals": 10,
-      "confident_win_rate_pct": 20.0
+    {
+      "timestamp": "2026-10-18T04:08:19.820681+00:00",
+      "symbol": "BTC-USD",
+      "status": "ACCEPTED",
+      "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5830 vs Old: 0.4891)",
+      "metrics": {
+        "new_roc_auc": 0.583,
+        "old_roc_auc": 0.4891,
+        "new_precision": 0.2,
+        "old_precision": 0.0,
+        "confident_trade_signals": 10,
+        "confident_win_rate_pct": 20.0
+      },
+      "experience_replay": {
+        "trades_matched": 0,
+        "penalties_3x": 0,
+        "boosts_1_5x": 0
+      }
     },
-    "experience_replay": {
-      "trades_matched": 0,
-      "penalties_3x": 0,
-      "boosts_1_5x": 0
-    }
-  },
-  {
-    "timestamp": "2026-10-18T04:08:20.057194+00:00",
-    "symbol": "ETH-USD",
-    "status": "ACCEPTED",
-    "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5830 vs Old: 0.3760)",
-    "metrics": {
-      "new_roc_auc": 0.583,
-      "old_roc_auc": 0.376,
-      "new_precision": 0.2,
-      "old_precision": 0.0,
-      "confident_trade_signals": 10,
-      "confident_win_rate_pct": 20.0
+    {
+      "timestamp": "2026-10-18T04:08:20.057194+00:00",
+      "symbol": "ETH-USD",
+      "status": "ACCEPTED",
+      "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5830 vs Old: 0.3760)",
+      "metrics": {
+        "new_roc_auc": 0.583,
+        "old_roc_auc": 0.376,
+        "new_precision": 0.2,
+        "old_precision": 0.0,
+        "confident_trade_signals": 10,
+        "confident_win_rate_pct": 20.0
+      },
+      "experience_replay": {
+        "trades_matched": 0,
+        "penalties_3x": 0,
+        "boosts_1_5x": 0
+      }
     },
-    "experience_replay": {
-      "trades_matched": 0,
-      "penalties_3x": 0,
-      "boosts_1_5x": 0
-    }
-  },
-  {
-    "timestamp": "2026-10-18T04:08:20.439137+00:00",
-    "symbol": "SOL-USD",
-    "status": "ACCEPTED",
-    "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5830 vs Old: 0.5002)",
-    "metrics": {
-      "new_roc_auc": 0.583,
-      "old_roc_auc": 0.5002,
-      "new_precision": 0.2,
-      "old_precision": 0.0,
-      "confident_trade_signals": 10,
-      "confident_win_rate_pct": 20.0
+    {
+      "timestamp": "2026-10-18T04:08:20.439137+00:00",
+      "symbol": "SOL-USD",
+      "status": "ACCEPTED",
+      "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5830 vs Old: 0.5002)",
+      "metrics": {
+        "new_roc_auc": 0.583,
+        "old_roc_auc": 0.5002,
+        "new_precision": 0.2,
+        "old_precision": 0.0,
+        "confident_trade_signals": 10,
+        "confident_win_rate_pct": 20.0
+      },
+      "experience_replay": {
+        "trades_matched": 0,
+        "penalties_3x": 0,
+        "boosts_1_5x": 0
+      }
     },
-    "experience_replay": {
-      "trades_matched": 0,
-      "penalties_3x": 0,
-      "boosts_1_5x": 0
-    }
-  },
-  {
-    "timestamp": "2026-10-18T04:09:19.989243+00:00",
-    "symbol": "BTC-USD",
-    "status": "ACCEPTED",
-    "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5190 vs Old: 0.5190)",
-    "metrics": {
-      "new_roc_auc": 0.519,
-      "old_roc_auc": 0.519,
-      "new_precision": 0.3448,
-      "old_precision": 0.3448,
-      "confident_trade_signals": 116,
-      "confident_win_rate_pct": 34.48
+    {
+      "timestamp": "2026-10-18T04:09:19.989243+00:00",
+      "symbol": "BTC-USD",
+      "status": "ACCEPTED",
+      "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5190 vs Old: 0.5190)",
+      "metrics": {
+        "new_roc_auc": 0.519,
+        "old_roc_auc": 0.519,
+        "new_precision": 0.3448,
+        "old_precision": 0.3448,
+        "confident_trade_signals": 116,
+        "confident_win_rate_pct": 34.48
+      },
+      "experience_replay": {
+        "trades_matched": 0,
+        "penalties_3x": 0,
+        "boosts_1_5x": 0
+      }
     },
-    "experience_replay": {
-      "trades_matched": 0,
-      "penalties_3x": 0,
-      "boosts_1_5x": 0
-    }
-  },
-  {
-    "timestamp": "2026-10-18T04:09:20.414079+00:00",
-    "symbol": "BTC-USD",
-    "status": "ACCEPTED",
-    "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5190 vs Old: 0.5190)",
-    "metrics": {
-      "new_roc_auc": 0.519,
-      "old_roc_auc": 0.519,
-      "new_precision": 0.3448,
-      "old_precision": 0.3448,
-      "confident_trade_signals": 116,
-      "confident_win_rate_pct": 34.48
+    {
+      "timestamp": "2026-10-18T04:09:20.414079+00:00",
+      "symbol": "BTC-USD",
+      "status": "ACCEPTED",
+      "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5190 vs Old: 0.5190)",
+      "metrics": {
+        "new_roc_auc": 0.519,
+        "old_roc_auc": 0.519,
+        "new_precision": 0.3448,
+        "old_precision": 0.3448,
+        "confident_trade_signals": 116,
+        "confident_win_rate_pct": 34.48
+      },
+      "experience_replay": {
+        "trades_matched": 0,
+        "penalties_3x": 0,
+        "boosts_1_5x": 0
+      }
     },
-    "experience_replay": {
-      "trades_matched": 0,
-      "penalties_3x": 0,
-      "boosts_1_5x": 0
-    }
-  },
-  {
-    "timestamp": "2026-10-18T04:09:23.071592+00:00",
-    "symbol": "BTC-USD",
-    "status": "ACCEPTED",
-    "reason": "ACCEPTED: Initial calibration or improved performance",
-    "metrics": {
-      "new_roc_auc": 0.5243,
-      "old_roc_auc": null,
-      "new_precision": 0.3277,
-      "old_precision": null,
-      "confident_trade_signals": 119,
-      "confident_win_rate_pct": 32.77
+    {
+      "timestamp": "2026-10-18T04:09:23.071592+00:00",
+      "symbol": "BTC-USD",
+      "status": "ACCEPTED",
+      "reason": "ACCEPTED: Initial calibration or improved performance",
+      "metrics": {
+        "new_roc_auc": 0.5243,
+        "old_roc_auc": null,
+        "new_precision": 0.3277,
+        "old_precision": null,
+        "confident_trade_signals": 119,
+        "confident_win_rate_pct": 32.77
+      },
+      "experience_replay": {
+        "trades_matched": 2,
+        "penalties_3x": 5,
+        "boosts_1_5x": 5
+      }
     },
-    "experience_replay": {
-      "trades_matched": 2,
-      "penalties_3x": 5,
-      "boosts_1_5x": 5
-    }
-  },
-  {
-    "timestamp": "2026-10-18T16:10:37.941582+00:00",
-    "symbol": "BTC-USD",
-    "status": "ACCEPTED",
-    "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5190 vs Old: 0.5190)",
-    "metrics": {
-      "new_roc_auc": 0.519,
-      "old_roc_auc": 0.519,
-      "new_precision": 0.3448,
-      "old_precision": 0.3448,
-      "confident_trade_signals": 116,
-      "confident_win_rate_pct": 34.48
+    {
+      "timestamp": "2026-10-18T16:10:37.941582+00:00",
+      "symbol": "BTC-USD",
+      "status": "ACCEPTED",
+      "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5190 vs Old: 0.5190)",
+      "metrics": {
+        "new_roc_auc": 0.519,
+        "old_roc_auc": 0.519,
+        "new_precision": 0.3448,
+        "old_precision": 0.3448,
+        "confident_trade_signals": 116,
+        "confident_win_rate_pct": 34.48
+      },
+      "experience_replay": {
+        "trades_matched": 0,
+        "penalties_3x": 0,
+        "boosts_1_5x": 0
+      }
     },
-    "experience_replay": {
-      "trades_matched": 0,
-      "penalties_3x": 0,
-      "boosts_1_5x": 0
-    }
-  },
-  {
-    "timestamp": "2026-10-18T16:10:38.582266+00:00",
-    "symbol": "BTC-USD",
-    "status": "ACCEPTED",
-    "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5190 vs Old: 0.5190)",
-    "metrics": {
-      "new_roc_auc": 0.519,
-      "old_roc_auc": 0.519,
-      "new_precision": 0.3448,
-      "old_precision": 0.3448,
-      "confident_trade_signals": 116,
-      "confident_win_rate_pct": 34.48
+    {
+      "timestamp": "2026-10-18T16:10:38.582266+00:00",
+      "symbol": "BTC-USD",
+      "status": "ACCEPTED",
+      "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5190 vs Old: 0.5190)",
+      "metrics": {
+        "new_roc_auc": 0.519,
+        "old_roc_auc": 0.519,
+        "new_precision": 0.3448,
+        "old_precision": 0.3448,
+        "confident_trade_signals": 116,
+        "confident_win_rate_pct": 34.48
+      },
+      "experience_replay": {
+        "trades_matched": 0,
+        "penalties_3x": 0,
+        "boosts_1_5x": 0
+      }
     },
-    "experience_replay": {
-      "trades_matched": 0,
-      "penalties_3x": 0,
-      "boosts_1_5x": 0
-    }
-  },
-  {
-    "timestamp": "2026-10-18T16:10:43.384257+00:00",
-    "symbol": "BTC-USD",
-    "status": "ACCEPTED",
-    "reason": "ACCEPTED: Initial calibration or improved performance",
-    "metrics": {
-      "new_roc_auc": 0.5243,
-      "old_roc_auc": null,
-      "new_precision": 0.3277,
-      "old_precision": null,
-      "confident_trade_signals": 119,
-      "confident_win_rate_pct": 32.77
+    {
+      "timestamp": "2026-10-18T16:10:43.384257+00:00",
+      "symbol": "BTC-USD",
+      "status": "ACCEPTED",
+      "reason": "ACCEPTED: Initial calibration or improved performance",
+      "metrics": {
+        "new_roc_auc": 0.5243,
+        "old_roc_auc": null,
+        "new_precision": 0.3277,
+        "old_precision": null,
+        "confident_trade_signals": 119,
+        "confident_win_rate_pct": 32.77
+      },
+      "experience_replay": {
+        "trades_matched": 2,
+        "penalties_3x": 5,
+        "boosts_1_5x": 5
+      }
     },
-    "experience_replay": {
-      "trades_matched": 2,
-      "penalties_3x": 5,
-      "boosts_1_5x": 5
-    }
-  },
-  {
-    "timestamp": "2026-10-18T16:15:49.184454+00:00",
-    "symbol": "BTC-USD",
-    "status": "ACCEPTED",
-    "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5190 vs Old: 0.5190)",
-    "metrics": {
-      "new_roc_auc": 0.519,
-      "old_roc_auc": 0.519,
-      "new_precision": 0.3448,
-      "old_precision": 0.3448,
-      "confident_trade_signals": 116,
-      "confident_win_rate_pct": 34.48
+    {
+      "timestamp": "2026-10-18T16:15:49.184454+00:00",
+      "symbol": "BTC-USD",
+      "status": "ACCEPTED",
+      "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5190 vs Old: 0.5190)",
+      "metrics": {
+        "new_roc_auc": 0.519,
+        "old_roc_auc": 0.519,
+        "new_precision": 0.3448,
+        "old_precision": 0.3448,
+        "confident_trade_signals": 116,
+        "confident_win_rate_pct": 34.48
+      },
+      "experience_replay": {
+        "trades_matched": 0,
+        "penalties_3x": 0,
+        "boosts_1_5x": 0
+      }
     },
-    "experience_replay": {
-      "trades_matched": 0,
-      "penalties_3x": 0,
-      "boosts_1_5x": 0
-    }
-  },
-  {
-    "timestamp": "2026-10-18T16:15:49.811450+00:00",
-    "symbol": "BTC-USD",
-    "status": "ACCEPTED",
-    "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5190 vs Old: 0.5190)",
-    "metrics": {
-      "new_roc_auc": 0.519,
-      "old_roc_auc": 0.519,
-      "new_precision": 0.3448,
-      "old_precision": 0.3448,
-      "confident_trade_signals": 116,
-      "confident_win_rate_pct": 34.48
+    {
+      "timestamp": "2026-10-18T16:15:49.811450+00:00",
+      "symbol": "BTC-USD",
+      "status": "ACCEPTED",
+      "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5190 vs Old: 0.5190)",
+      "metrics": {
+        "new_roc_auc": 0.519,
+        "old_roc_auc": 0.519,
+        "new_precision": 0.3448,
+        "old_precision": 0.3448,
+        "confident_trade_signals": 116,
+        "confident_win_rate_pct": 34.48
+      },
+      "experience_replay": {
+        "trades_matched": 0,
+        "penalties_3x": 0,
+        "boosts_1_5x": 0
+      }
     },
-    "experience_replay": {
-      "trades_matched": 0,
-      "penalties_3x": 0,
-      "boosts_1_5x": 0
-    }
-  },
-  {
-    "timestamp": "2026-10-18T16:15:52.286003+00:00",
-    "symbol": "BTC-USD",
-    "status": "ACCEPTED",
-    "reason": "ACCEPTED: Initial calibration or improved performance",
-    "metrics": {
-      "new_roc_auc": 0.5243,
-      "old_roc_auc": null,
-      "new_precision": 0.3277,
-      "old_precision": null,
-      "confident_trade_signals": 119,
-      "confident_win_rate_pct": 32.77
+    {
+      "timestamp": "2026-10-18T16:15:52.286003+00:00",
+      "symbol": "BTC-USD",
+      "status": "ACCEPTED",
+      "reason": "ACCEPTED: Initial calibration or improved performance",
+      "metrics": {
+        "new_roc_auc": 0.5243,
+        "old_roc_auc": null,
+        "new_precision": 0.3277,
+        "old_precision": null,
+        "confident_trade_signals": 119,
+        "confident_win_rate_pct": 32.77
+      },
+      "experience_replay": {
+        "trades_matched": 2,
+        "penalties_3x": 5,
+        "boosts_1_5x": 5
+      }
     },
-    "experience_replay": {
-      "trades_matched": 2,
-      "penalties_3x": 5,
-      "boosts_1_5x": 5
+    {
+      "timestamp": "2026-11-08T06:44:48.192435+00:00",
+      "symbol": "BTC-USD",
+      "status": "ACCEPTED",
+      "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5667 vs Old: 0.5167)",
+      "total_closed_trades": 37,
+      "metrics": {
+        "new_roc_auc": 0.5667,
+        "old_roc_auc": 0.5167,
+        "new_precision": 0.3627,
+        "old_precision": 0.3448,
+        "confident_trade_signals": 102,
+        "confident_win_rate_pct": 36.27
+      },
+      "experience_replay": {
+        "trades_matched": 14,
+        "penalties_3x": 44,
+        "boosts_1_5x": 12
+      },
+      "last_attempt_timestamp": "2026-11-08T06:44:48.192435+00:00",
+      "last_accepted_timestamp": "2026-11-08T06:44:48.192435+00:00"
+    },
+    {
+      "timestamp": "2026-11-08T06:44:48.422171+00:00",
+      "symbol": "BTC-USD",
+      "status": "ACCEPTED",
+      "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5667 vs Old: 0.5667)",
+      "total_closed_trades": 37,
+      "metrics": {
+        "new_roc_auc": 0.5667,
+        "old_roc_auc": 0.5667,
+        "new_precision": 0.3627,
+        "old_precision": 0.3627,
+        "confident_trade_signals": 102,
+        "confident_win_rate_pct": 36.27
+      },
+      "experience_replay": {
+        "trades_matched": 14,
+        "penalties_3x": 44,
+        "boosts_1_5x": 12
+      },
+      "last_attempt_timestamp": "2026-11-08T06:44:48.422171+00:00",
+      "last_accepted_timestamp": "2026-11-08T06:44:48.422171+00:00"
+    },
+    {
+      "timestamp": "2026-11-08T06:44:51.814147+00:00",
+      "symbol": "BTC-USD",
+      "status": "ACCEPTED",
+      "reason": "ACCEPTED: Initial calibration or improved performance",
+      "total_closed_trades": 2,
+      "metrics": {
+        "new_roc_auc": 0.5243,
+        "old_roc_auc": null,
+        "new_precision": 0.3277,
+        "old_precision": null,
+        "confident_trade_signals": 119,
+        "confident_win_rate_pct": 32.77
+      },
+      "experience_replay": {
+        "trades_matched": 2,
+        "penalties_3x": 5,
+        "boosts_1_5x": 5
+      },
+      "last_attempt_timestamp": "2026-11-08T06:44:51.814147+00:00",
+      "last_accepted_timestamp": "2026-11-08T06:44:51.814147+00:00"
+    },
+    {
+      "timestamp": "2026-11-08T06:45:31.924499+00:00",
+      "symbol": "BTC-USD",
+      "status": "ACCEPTED",
+      "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5667 vs Old: 0.5667)",
+      "total_closed_trades": 37,
+      "metrics": {
+        "new_roc_auc": 0.5667,
+        "old_roc_auc": 0.5667,
+        "new_precision": 0.3627,
+        "old_precision": 0.3627,
+        "confident_trade_signals": 102,
+        "confident_win_rate_pct": 36.27
+      },
+      "experience_replay": {
+        "trades_matched": 14,
+        "penalties_3x": 44,
+        "boosts_1_5x": 12
+      },
+      "last_attempt_timestamp": "2026-11-08T06:45:31.924499+00:00",
+      "last_accepted_timestamp": "2026-11-08T06:45:31.924499+00:00"
+    },
+    {
+      "timestamp": "2026-11-08T06:45:32.144013+00:00",
+      "symbol": "BTC-USD",
+      "status": "ACCEPTED",
+      "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5667 vs Old: 0.5667)",
+      "total_closed_trades": 37,
+      "metrics": {
+        "new_roc_auc": 0.5667,
+        "old_roc_auc": 0.5667,
+        "new_precision": 0.3627,
+        "old_precision": 0.3627,
+        "confident_trade_signals": 102,
+        "confident_win_rate_pct": 36.27
+      },
+      "experience_replay": {
+        "trades_matched": 14,
+        "penalties_3x": 44,
+        "boosts_1_5x": 12
+      },
+      "last_attempt_timestamp": "2026-11-08T06:45:32.144013+00:00",
+      "last_accepted_timestamp": "2026-11-08T06:45:32.144013+00:00"
+    },
+    {
+      "timestamp": "2026-11-08T06:45:34.798233+00:00",
+      "symbol": "BTC-USD",
+      "status": "ACCEPTED",
+      "reason": "ACCEPTED: Initial calibration or improved performance",
+      "total_closed_trades": 2,
+      "metrics": {
+        "new_roc_auc": 0.5243,
+        "old_roc_auc": null,
+        "new_precision": 0.3277,
+        "old_precision": null,
+        "confident_trade_signals": 119,
+        "confident_win_rate_pct": 32.77
+      },
+      "experience_replay": {
+        "trades_matched": 2,
+        "penalties_3x": 5,
+        "boosts_1_5x": 5
+      },
+      "last_attempt_timestamp": "2026-11-08T06:45:34.798233+00:00",
+      "last_accepted_timestamp": "2026-11-08T06:45:34.798233+00:00"
+    },
+    {
+      "timestamp": "2026-11-08T06:45:45.195664+00:00",
+      "symbol": "BTC-USD",
+      "status": "ACCEPTED",
+      "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5316 vs Old: 0.5336)",
+      "total_closed_trades": 37,
+      "metrics": {
+        "new_roc_auc": 0.5316,
+        "old_roc_auc": 0.5336,
+        "new_precision": 0.5769,
+        "old_precision": 0.2969,
+        "confident_trade_signals": 52,
+        "confident_win_rate_pct": 57.69
+      },
+      "experience_replay": {
+        "trades_matched": 14,
+        "penalties_3x": 44,
+        "boosts_1_5x": 12
+      },
+      "last_attempt_timestamp": "2026-11-08T06:45:45.195664+00:00",
+      "last_accepted_timestamp": "2026-11-08T06:45:45.195664+00:00"
+    },
+    {
+      "timestamp": "2026-11-08T06:45:46.027385+00:00",
+      "symbol": "ETH-USD",
+      "status": "ACCEPTED",
+      "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.6144 vs Old: 0.5341)",
+      "total_closed_trades": 37,
+      "metrics": {
+        "new_roc_auc": 0.6144,
+        "old_roc_auc": 0.5341,
+        "new_precision": 0.5459,
+        "old_precision": 0.3125,
+        "confident_trade_signals": 185,
+        "confident_win_rate_pct": 54.59
+      },
+      "experience_replay": {
+        "trades_matched": 9,
+        "penalties_3x": 12,
+        "boosts_1_5x": 24
+      },
+      "last_attempt_timestamp": "2026-11-08T06:45:46.027385+00:00",
+      "last_accepted_timestamp": "2026-11-08T06:45:46.027385+00:00"
+    },
+    {
+      "timestamp": "2026-11-08T06:45:47.043461+00:00",
+      "symbol": "SOL-USD",
+      "status": "ACCEPTED",
+      "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5530 vs Old: 0.5079)",
+      "total_closed_trades": 37,
+      "metrics": {
+        "new_roc_auc": 0.553,
+        "old_roc_auc": 0.5079,
+        "new_precision": 0.84,
+        "old_precision": 0.2778,
+        "confident_trade_signals": 25,
+        "confident_win_rate_pct": 84.0
+      },
+      "experience_replay": {
+        "trades_matched": 14,
+        "penalties_3x": 36,
+        "boosts_1_5x": 20
+      },
+      "last_attempt_timestamp": "2026-11-08T06:45:47.043461+00:00",
+      "last_accepted_timestamp": "2026-11-08T06:45:47.043461+00:00"
     }
-  }
-]
+  ]
+}

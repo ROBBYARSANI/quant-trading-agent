@@ -36,28 +36,120 @@ from data_pipeline import STATIONARY_FEATURE_COLUMNS
 logger = setup_logger("ModelEngine")
 
 
+def count_closed_trades(
+    trade_history: Optional[Union[str, Path, pd.DataFrame, List[Dict[str, Any]]]] = None,
+    symbol: Optional[str] = None,
+) -> int:
+    """
+    Counts total completed/closed trades (actions starting with 'SELL') from trade history.
+    If symbol is specified, only counts closed trades for that asset.
+    """
+    clean_target = symbol.replace("/", "-").upper() if symbol else None
+
+    # Case 1: Direct DataFrame
+    if isinstance(trade_history, pd.DataFrame):
+        df_hist = trade_history
+        if "action" not in df_hist.columns:
+            return 0
+        mask = df_hist["action"].astype(str).str.upper().str.startswith("SELL")
+        if clean_target and "symbol" in df_hist.columns:
+            sym_col = df_hist["symbol"].astype(str).str.replace("/", "-").str.upper()
+            mask = mask & (sym_col == clean_target)
+        return int(mask.sum())
+
+    # Case 2: Direct List of dicts
+    if isinstance(trade_history, list):
+        count = 0
+        for item in trade_history:
+            action = str(item.get("action", "")).upper()
+            if action.startswith("SELL") or "net_pnl" in item:
+                if clean_target:
+                    sym = str(item.get("symbol", "")).replace("/", "-").upper()
+                    if sym and sym != clean_target:
+                        continue
+                count += 1
+        return count
+
+    # Case 3: CSV file on disk
+    file_path = Path(trade_history) if trade_history else TRADE_HISTORY_FILE
+    if not file_path.exists():
+        return 0
+
+    count = 0
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                action = str(row.get("action", "")).upper()
+                if action.startswith("SELL"):
+                    if clean_target:
+                        sym = str(row.get("symbol", "")).replace("/", "-").upper()
+                        if sym and sym != clean_target:
+                            continue
+                    count += 1
+    except Exception as exc:
+        logger.debug("Failed to count closed trades from %s: %s", file_path, exc)
+    return count
+
+
 def _append_retrain_history(
     record: Dict[str, Any], history_file: Path = RETRAIN_HISTORY_FILE
 ) -> None:
-    """Appends model retraining audit log to retrain_history.json."""
+    """
+    Appends model retraining audit log to retrain_history.json with top-level metadata:
+    - last_attempt_timestamp: always updated to current timestamp (prevents infinite 15m retrain loops)
+    - last_accepted_timestamp: updated only when model is ACCEPTED by Quality Gatekeeper
+    - total_closed_trades: snapshot of total closed trades count at time of retraining
+    """
     hist_path = Path(history_file)
     hist_path.parent.mkdir(parents=True, exist_ok=True)
+    existing_meta: Dict[str, Any] = {}
     history: List[Dict[str, Any]] = []
+
     if hist_path.exists():
         try:
             with open(hist_path, "r", encoding="utf-8") as f:
-                history = json.load(f)
-                if not isinstance(history, list):
-                    history = []
+                raw_data = json.load(f)
+                if isinstance(raw_data, dict):
+                    existing_meta = raw_data
+                    history = raw_data.get("history", [])
+                elif isinstance(raw_data, list):
+                    history = raw_data
         except Exception as exc:
             logger.warning("Could not parse existing retrain history: %s", exc)
             history = []
 
+    attempt_ts = record.get("timestamp", datetime.now(timezone.utc).isoformat())
+    last_accepted_ts = existing_meta.get("last_accepted_timestamp", "")
+
+    if record.get("status") == "ACCEPTED":
+        last_accepted_ts = attempt_ts
+    elif not last_accepted_ts:
+        for rec in reversed(history):
+            if rec.get("status") == "ACCEPTED":
+                last_accepted_ts = rec.get("timestamp", "")
+                break
+
+    # Stamp timestamps and closed trades count directly into audit record
+    record["last_attempt_timestamp"] = attempt_ts
+    record["last_accepted_timestamp"] = last_accepted_ts or attempt_ts
+    if "total_closed_trades" not in record:
+        record["total_closed_trades"] = count_closed_trades()
+
     history.append(record)
+
+    out_payload = {
+        "last_attempt_timestamp": attempt_ts,
+        "last_accepted_timestamp": last_accepted_ts or attempt_ts,
+        "last_status": record.get("status", "UNKNOWN"),
+        "total_closed_trades": record.get("total_closed_trades", count_closed_trades()),
+        "history": history,
+    }
+
     temp_path = hist_path.with_suffix(".tmp")
     try:
         with open(temp_path, "w", encoding="utf-8") as f:
-            json.dump(history, f, indent=2)
+            json.dump(out_payload, f, indent=2)
         temp_path.replace(hist_path)
     except Exception as exc:
         logger.error("Failed to append retrain history: %s", exc)
@@ -66,7 +158,7 @@ def _append_retrain_history(
 def load_retrain_history(
     history_file: Path = RETRAIN_HISTORY_FILE,
 ) -> List[Dict[str, Any]]:
-    """Loads all model retraining audit records."""
+    """Loads all model retraining audit records as a list for compatibility."""
     hist_path = Path(history_file)
     if hist_path.exists():
         try:
@@ -74,9 +166,42 @@ def load_retrain_history(
                 data = json.load(f)
                 if isinstance(data, list):
                     return data
+                elif isinstance(data, dict):
+                    return data.get("history", [])
         except Exception as exc:
             logger.debug("Error loading retrain history: %s", exc)
     return []
+
+
+def load_retrain_metadata(
+    history_file: Path = RETRAIN_HISTORY_FILE,
+) -> Dict[str, Any]:
+    """Loads top-level retrain metadata including last_attempt and last_accepted timestamps."""
+    hist_path = Path(history_file)
+    if hist_path.exists():
+        try:
+            with open(hist_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, dict):
+                    return data
+                elif isinstance(data, list) and data:
+                    last_record = data[-1]
+                    last_attempt = last_record.get("timestamp", "")
+                    last_accepted = ""
+                    for rec in reversed(data):
+                        if rec.get("status") == "ACCEPTED":
+                            last_accepted = rec.get("timestamp", "")
+                            break
+                    return {
+                        "last_attempt_timestamp": last_attempt,
+                        "last_accepted_timestamp": last_accepted or last_attempt,
+                        "last_status": last_record.get("status", "ACCEPTED"),
+                        "total_closed_trades": last_record.get("total_closed_trades", 0),
+                        "history": data,
+                    }
+        except Exception as exc:
+            logger.debug("Error loading retrain metadata: %s", exc)
+    return {}
 
 
 def extract_trade_feedback(
@@ -559,12 +684,15 @@ class QuantModel:
             "boosts_count": int(replay_summary["boosts"]),
         }
 
+        closed_trades_snapshot = count_closed_trades(trade_history=trade_history or TRADE_HISTORY_FILE)
+
         # 6. Audit Logging to retrain_history.json
         audit_record = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "symbol": self.symbol,
             "status": "ACCEPTED" if is_accepted else "REJECTED",
             "reason": gatekeeper_reason,
+            "total_closed_trades": closed_trades_snapshot,
             "metrics": {
                 "new_roc_auc": round(float(roc_auc), 4),
                 "old_roc_auc": round(float(old_metrics.get("roc_auc", 0.0)), 4) if old_metrics else None,
@@ -630,23 +758,142 @@ class QuantModel:
         self.trained_at = data.get("trained_at", None)
         logger.info("Model loaded successfully from %s", self.model_path)
 
-    def get_model_age_days(self) -> float:
-        """Returns the age of the serialized model artifact in days (or inf if missing)."""
-        p = Path(self.model_path)
-        if not p.exists():
-            return float("inf")
+    def get_model_age_days(
+        self,
+        history_file: Optional[Union[str, Path]] = None,
+        use_last_attempt: bool = True,
+    ) -> float:
+        """
+        Returns the elapsed days since the model was last retrained or evaluated.
+        Bypasses file mtime to prevent git checkout in cloud environments from resetting age.
+        Primary source: models/retrain_history.json timestamp.
+        Fallback: self.trained_at embedded in serialized joblib dictionary.
+        Returns float('inf') if no retrain record exists.
+        """
+        hist_file = Path(history_file) if history_file else RETRAIN_HISTORY_FILE
+        clean_target = self.symbol.replace("/", "-").upper() if self.symbol else None
+
+        # 1. Primary: Read from retrain_history.json
+        if hist_file.exists():
+            try:
+                with open(hist_file, "r", encoding="utf-8") as f:
+                    raw_data = json.load(f)
+
+                records: List[Dict[str, Any]] = []
+                top_attempt = ""
+                top_accepted = ""
+                if isinstance(raw_data, dict):
+                    records = raw_data.get("history", [])
+                    top_attempt = raw_data.get("last_attempt_timestamp", "")
+                    top_accepted = raw_data.get("last_accepted_timestamp", "")
+                elif isinstance(raw_data, list):
+                    records = raw_data
+
+                # Search symbol-specific record in reverse
+                for rec in reversed(records):
+                    rec_sym = str(rec.get("symbol", "")).replace("/", "-").upper()
+                    if not clean_target or rec_sym == clean_target:
+                        ts_str = (
+                            rec.get("timestamp")
+                            if use_last_attempt
+                            else rec.get("last_accepted_timestamp", rec.get("timestamp"))
+                        )
+                        if ts_str:
+                            dt = datetime.fromisoformat(str(ts_str).replace("Z", "+00:00"))
+                            return max(0.0, (datetime.now(timezone.utc) - dt).total_seconds() / 86400.0)
+
+                # Fallback to top-level timestamp
+                fallback_ts = top_attempt if use_last_attempt else (top_accepted or top_attempt)
+                if fallback_ts:
+                    dt = datetime.fromisoformat(str(fallback_ts).replace("Z", "+00:00"))
+                    return max(0.0, (datetime.now(timezone.utc) - dt).total_seconds() / 86400.0)
+
+                # Fallback to latest record in list if no symbol match
+                if records:
+                    last_rec = records[-1]
+                    ts_str = (
+                        last_rec.get("timestamp")
+                        if use_last_attempt
+                        else last_rec.get("last_accepted_timestamp", last_rec.get("timestamp"))
+                    )
+                    if ts_str:
+                        dt = datetime.fromisoformat(str(ts_str).replace("Z", "+00:00"))
+                        return max(0.0, (datetime.now(timezone.utc) - dt).total_seconds() / 86400.0)
+
+            except Exception as exc:
+                logger.debug("Could not read retrain timestamp from %s: %s", hist_file, exc)
+
+        # 2. Secondary fallback: self.trained_at stored in joblib
         if hasattr(self, "trained_at") and self.trained_at:
             try:
                 dt = datetime.fromisoformat(self.trained_at.replace("Z", "+00:00"))
-                return (datetime.now(timezone.utc) - dt).total_seconds() / 86400.0
+                return max(0.0, (datetime.now(timezone.utc) - dt).total_seconds() / 86400.0)
             except Exception:
                 pass
-        mtime = p.stat().st_mtime
-        return (datetime.now(timezone.utc).timestamp() - mtime) / 86400.0
 
-    def is_retrain_due(self, max_age_days: int = RETRAIN_INTERVAL_DAYS) -> bool:
-        """Checks if model artifact age exceeds max_age_days (default 7 days)."""
-        return self.get_model_age_days() >= max_age_days
+        return float("inf")
+
+    def is_retrain_due(
+        self,
+        max_age_days: int = RETRAIN_INTERVAL_DAYS,
+        min_new_trades: int = 10,
+        trade_history_file: Optional[Union[str, Path]] = None,
+        retrain_history_file: Optional[Union[str, Path]] = None,
+    ) -> bool:
+        """
+        Checks if model requires autonomous self-learning retraining:
+        Trigger 1: Model age >= max_age_days (default 7 days) based on retrain_history.json timestamp.
+        Trigger 2: Total closed trades in trade_history.csv increased by >= min_new_trades (default 10)
+                   since the last retraining evaluation.
+        """
+        hist_file = Path(retrain_history_file) if retrain_history_file else RETRAIN_HISTORY_FILE
+        trades_file = Path(trade_history_file) if trade_history_file else TRADE_HISTORY_FILE
+
+        # Trigger 1: Age check (bypassing git checkout mtime)
+        age_days = self.get_model_age_days(history_file=hist_file, use_last_attempt=True)
+        if age_days >= max_age_days:
+            logger.info(
+                "[%s] Retrain due (Trigger: Model Age): %.2f days >= %d days threshold.",
+                self.symbol,
+                age_days,
+                max_age_days,
+            )
+            return True
+
+        # Trigger 2: Closed trades accumulation check (>= 10 new trades)
+        current_closed_trades = count_closed_trades(trade_history=trades_file)
+        last_retrain_trades = 0
+
+        if hist_file.exists():
+            try:
+                with open(hist_file, "r", encoding="utf-8") as f:
+                    raw_data = json.load(f)
+                    if isinstance(raw_data, dict):
+                        last_retrain_trades = int(raw_data.get("total_closed_trades", 0))
+                        if last_retrain_trades == 0:
+                            for rec in reversed(raw_data.get("history", [])):
+                                if "total_closed_trades" in rec:
+                                    last_retrain_trades = int(rec["total_closed_trades"])
+                                    break
+                    elif isinstance(raw_data, list) and raw_data:
+                        for rec in reversed(raw_data):
+                            if "total_closed_trades" in rec:
+                                last_retrain_trades = int(rec["total_closed_trades"])
+                                break
+            except Exception as exc:
+                logger.debug("Failed reading closed trades baseline from %s: %s", hist_file, exc)
+
+        new_trades_count = current_closed_trades - last_retrain_trades
+        if new_trades_count >= min_new_trades:
+            logger.info(
+                "[%s] Retrain due (Trigger: Trade Feedback): %d new closed trades >= %d threshold.",
+                self.symbol,
+                new_trades_count,
+                min_new_trades,
+            )
+            return True
+
+        return False
 
     def predict_signal(self, latest_df: pd.DataFrame) -> Tuple[str, float]:
         """

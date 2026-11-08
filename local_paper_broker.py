@@ -518,20 +518,38 @@ class LocalPaperBroker:
         # Read latest self-learning retrain audit log
         retrain_display = "Active Calibration (Self-Learning Ready)"
         retrain_badge = "ACTIVE (0 Penalties)"
+        retrain_color = "#a78bfa"
         if RETRAIN_HISTORY_FILE.exists():
             try:
                 with open(RETRAIN_HISTORY_FILE, "r", encoding="utf-8") as f:
                     r_data = json.load(f)
-                    if isinstance(r_data, list) and r_data:
-                        last_r = r_data[-1]
-                        r_ts = last_r.get("timestamp", "")
+                    records: List[Dict[str, Any]] = []
+                    last_attempt_ts = ""
+                    last_accepted_ts = ""
+                    if isinstance(r_data, dict):
+                        records = r_data.get("history", [])
+                        last_attempt_ts = r_data.get("last_attempt_timestamp", "")
+                        last_accepted_ts = r_data.get("last_accepted_timestamp", "")
+                    elif isinstance(r_data, list):
+                        records = r_data
+
+                    if records:
+                        last_r = records[-1]
+                        r_ts = last_attempt_ts or last_r.get("timestamp", "")
                         r_dt = r_ts.replace("T", " ")[:16] if r_ts else "Recent"
                         r_stat = last_r.get("status", "ACCEPTED")
                         r_exp = last_r.get("experience_replay", {})
                         r_matched = r_exp.get("trades_matched", 0)
                         r_penalties = r_exp.get("penalties_3x", 0)
-                        retrain_display = f"Last Retrain: {r_dt} UTC ({r_stat} &bull; {r_matched} Trades Replayed)"
-                        retrain_badge = f"{r_stat} ({r_dt} UTC &bull; {r_penalties} Penalties)"
+
+                        if r_stat == "ACCEPTED":
+                            retrain_display = f"Last Retrain: {r_dt} UTC (ACCEPTED &bull; {r_matched} Trades Replayed)"
+                            retrain_badge = f"ACCEPTED ({r_dt} UTC &bull; {r_penalties} Penalties)"
+                            retrain_color = "#10b981"
+                        else:
+                            retrain_display = f"Last Attempt: {r_dt} UTC (UPDATED/KEPT &bull; {r_matched} Replayed)"
+                            retrain_badge = f"UPDATED {r_dt} UTC &bull; {r_penalties} Penalties"
+                            retrain_color = "#a78bfa"
             except Exception as exc:
                 logger.debug("Retrain history read error: %s", exc)
 
@@ -866,7 +884,7 @@ class LocalPaperBroker:
             </div>
             <div style="text-align: right;">
                 <div class="meta-text">LAST REFRESH: {updated_time}</div>
-                <div class="meta-text" style="color: #a78bfa; margin-top: 4px;">SELF-LEARNING AI: {retrain_badge}</div>
+                <div class="meta-text" style="color: {retrain_color}; margin-top: 4px;">SELF-LEARNING AI: {retrain_badge}</div>
                 <div class="meta-text" style="color: var(--success); margin-top: 4px;">CIRCUIT BREAKER: ARMED (-3.0%)</div>
             </div>
         </header>
