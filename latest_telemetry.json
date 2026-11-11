@@ -1,31 +1,31 @@
 {
-  "timestamp": "2026-11-11T05:28:11.154731+00:00",
+  "timestamp": "2026-11-11T12:53:09.231733+00:00",
   "threshold": 0.54,
   "assets": {
     "BTC-USD": {
-      "price": 73735.33,
-      "win_prob": 0.2081,
+      "price": 73923.76,
+      "win_prob": 0.1839,
+      "threshold": 0.54,
+      "signal": "HOLD",
+      "sentiment_score": -0.17,
+      "sentiment_label": "Negatif"
+    },
+    "ETH-USD": {
+      "price": 2053.73,
+      "win_prob": 0.2465,
+      "threshold": 0.54,
+      "signal": "HOLD",
+      "sentiment_score": -0.1,
+      "sentiment_label": "Netral"
+    },
+    "SOL-USD": {
+      "price": 83.93,
+      "win_prob": 0.2672,
       "threshold": 0.54,
       "signal": "HOLD",
       "sentiment_score": -0.3,
       "sentiment_label": "Negatif"
-    },
-    "ETH-USD": {
-      "price": 2065.31,
-      "win_prob": 0.2404,
-      "threshold": 0.54,
-      "signal": "HOLD",
-      "sentiment_score": -0.2,
-      "sentiment_label": "Negatif"
-    },
-    "SOL-USD": {
-      "price": 83.01,
-      "win_prob": 0.2802,
-      "threshold": 0.54,
-      "signal": "HOLD",
-      "sentiment_score": -0.18,
-      "sentiment_label": "Negatif"
     }
   },
-  "updated_at": "2026-11-11T05:28:11.154742+00:00"
+  "updated_at": "2026-11-11T12:53:09.231753+00:00"
 }
