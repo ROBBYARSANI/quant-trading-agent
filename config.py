@@ -52,8 +52,8 @@ TIMEFRAME: str = os.getenv("TIMEFRAME", "1Hour")
 # Historical data lookback period for training (in days)
 LOOKBACK_DAYS: int = int(os.getenv("LOOKBACK_DAYS", "730"))
 
-# Model decision threshold: Win probability required to trigger BUY (Calibrated optimal 0.54)
-CONFIDENCE_THRESHOLD: float = float(os.getenv("CONFIDENCE_THRESHOLD", "0.54"))
+# Model decision threshold: Win probability required to trigger BUY (Calibrated 0.42 for 2:1 R:R)
+CONFIDENCE_THRESHOLD: float = float(os.getenv("CONFIDENCE_THRESHOLD", "0.42"))
 
 # ==============================================================================
 # Triple-Barrier & Volatility Parameters
@@ -89,6 +89,7 @@ DEFAULT_SLIPPAGE_BPS: float = float(os.getenv("DEFAULT_SLIPPAGE_BPS", "0.0015"))
 # Sentiment Analysis & FinBERT Gatekeeper Parameters
 # ==============================================================================
 SENTIMENT_VETO_THRESHOLD: float = float(os.getenv("SENTIMENT_VETO_THRESHOLD", "-0.15"))
+SENTIMENT_LEXICON_VETO_THRESHOLD: float = float(os.getenv("SENTIMENT_LEXICON_VETO_THRESHOLD", "-0.40"))
 SENTIMENT_BOOST_THRESHOLD: float = float(os.getenv("SENTIMENT_BOOST_THRESHOLD", "0.25"))
 SENTIMENT_BOOST_VALUE: float = float(os.getenv("SENTIMENT_BOOST_VALUE", "0.03"))
 

@@ -524,6 +524,7 @@ class QuantModel:
         train_ratio: float = 0.80,
         symbol: Optional[str] = None,
         trade_history: Optional[Union[str, Path, pd.DataFrame, List[Dict[str, Any]]]] = None,
+        retrain_history_file: Path = RETRAIN_HISTORY_FILE,
     ) -> Dict[str, Any]:
         """
         Trains the XGBoost model using a strict chronological split (default 80% train / 20% test).
@@ -540,35 +541,49 @@ class QuantModel:
 
         logger.info("Initiating chronological model training for %s (Train ratio: %.2f)...", self.symbol, train_ratio)
 
-        # 1. Experience Replay Sample Weighting
-        trades = extract_trade_feedback(trade_history=trade_history, symbol=self.symbol)
-        sample_weights, df_replay, replay_summary = apply_experience_replay(df=df, trades=trades)
-
-        # Prepare features and target
-        X = df_replay[self.feature_columns].values
-        y = df_replay["target"].values
-
-        total_samples = len(df_replay)
+        # 1. Strict Chronological Split BEFORE Experience Replay (prevents OOS data leakage)
+        total_samples = len(df)
         split_idx = int(total_samples * train_ratio)
 
-        X_train, X_test = X[:split_idx], X[split_idx:]
-        y_train, y_test = y[:split_idx], y[split_idx:]
-        w_train = sample_weights[:split_idx].copy()
+        train_df_raw = df.iloc[:split_idx].copy()
+        test_df_raw = df.iloc[split_idx:].copy()
 
-        # If any experience replay feedback samples fall in the test window,
-        # replay them into X_train so the model actively learns from the experience
-        replay_mask_in_test = sample_weights[split_idx:] > 1.0
-        if np.any(replay_mask_in_test):
-            X_replay = X_test[replay_mask_in_test]
-            y_replay = y_test[replay_mask_in_test]
-            w_replay = sample_weights[split_idx:][replay_mask_in_test]
-            X_train = np.vstack([X_train, X_replay])
-            y_train = np.concatenate([y_train, y_replay])
-            w_train = np.concatenate([w_train, w_replay])
-            logger.info("Experience Replay: Injected %d recent trade feedback samples into training set.", len(w_replay))
+        # Filter Experience Replay trades strictly to the training time window (timestamp <= train_df.index.max())
+        all_trades = extract_trade_feedback(trade_history=trade_history, symbol=self.symbol)
+        train_max_ts = pd.to_datetime(train_df_raw.index.max())
+        if train_max_ts.tzinfo is None:
+            train_max_ts = train_max_ts.tz_localize(timezone.utc)
+        else:
+            train_max_ts = train_max_ts.tz_convert(timezone.utc)
 
-        train_dates = (df_replay.index[0], df_replay.index[split_idx - 1])
-        test_dates = (df_replay.index[split_idx], df_replay.index[-1])
+        train_trades: List[Dict[str, Any]] = []
+        for tr in all_trades:
+            entry_str = tr.get("entry_timestamp")
+            if not entry_str:
+                continue
+            try:
+                entry_dt = pd.to_datetime(entry_str)
+                if entry_dt.tzinfo is None:
+                    entry_dt = entry_dt.tz_localize(timezone.utc)
+                else:
+                    entry_dt = entry_dt.tz_convert(timezone.utc)
+                if entry_dt <= train_max_ts:
+                    train_trades.append(tr)
+            except Exception:
+                continue
+
+        w_train, df_train_replay, replay_summary = apply_experience_replay(
+            df=train_df_raw, trades=train_trades
+        )
+
+        # Prepare features and target (test set remains strictly untouched / uncontaminated)
+        X_train = df_train_replay[self.feature_columns].values
+        y_train = df_train_replay["target"].values
+        X_test = test_df_raw[self.feature_columns].values
+        y_test = test_df_raw["target"].values
+
+        train_dates = (df_train_replay.index[0], df_train_replay.index[-1])
+        test_dates = (test_df_raw.index[0], test_df_raw.index[-1])
 
         logger.info(
             "Chronological Split: Train [%s to %s] (%d samples) | Test [%s to %s] (%d samples)",
@@ -707,7 +722,7 @@ class QuantModel:
                 "boosts_1_5x": int(replay_summary["boosts"]),
             },
         }
-        _append_retrain_history(audit_record)
+        _append_retrain_history(audit_record, history_file=retrain_history_file)
 
         logger.info("=" * 60)
         logger.info("OUT-OF-SAMPLE TEST EVALUATION RESULTS (%s):", self.symbol)
@@ -750,13 +765,14 @@ class QuantModel:
         logger.info("Trained model persisted to %s (timestamp: %s)", self.model_path, now_iso)
 
     def load_model(self) -> None:
-        """Loads serialized model from joblib file."""
+        """Loads serialized model from joblib file while preserving configured runtime threshold."""
         data = joblib.load(self.model_path)
         self.model = data["model"]
         self.feature_columns = data.get("features", self.feature_columns)
-        self.confidence_threshold = data.get("confidence_threshold", self.confidence_threshold)
+        if self.confidence_threshold is None:
+            self.confidence_threshold = data.get("confidence_threshold", CONFIDENCE_THRESHOLD)
         self.trained_at = data.get("trained_at", None)
-        logger.info("Model loaded successfully from %s", self.model_path)
+        logger.info("Model loaded successfully from %s (threshold: %.2f)", self.model_path, self.confidence_threshold)
 
     def get_model_age_days(
         self,

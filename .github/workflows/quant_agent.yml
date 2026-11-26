@@ -2,8 +2,8 @@ name: Autonomous Quant Trading Agent & Cloud Dashboard Sync
 
 on:
   schedule:
-    # Run every 15 minutes (Dual-Speed Pulse: SL/TP Check + Market Scanner)
-    - cron: '*/15 * * * *'
+    # Run every hour aligned with 1h candle closes (reduces GitHub Actions cron throttling)
+    - cron: '0 * * * *'
   workflow_dispatch: # Allows manual trigger from GitHub UI
 
 permissions:

@@ -485,6 +485,7 @@ class LocalPaperBroker:
             if exit_reason:
                 close_res = self.execute_sell_order(sym, eval_price, exit_reason)
                 if close_res:
+                    updated.pop(sym, None)
                     closed_events.append(close_res)
 
         self.generate_dashboard_html()
@@ -921,7 +922,7 @@ class LocalPaperBroker:
                     <div class="pulse-dot" style="width: 8px; height: 8px; background: #38bdf8; box-shadow: 0 0 8px #38bdf8;"></div>
                     <span>Live Market Scanner &amp; AI Telemetry (BTC, ETH, SOL)</span>
                 </div>
-                <span class="meta-text" id="telemetry-time">Thresh: 54% | Half-Kelly | {retrain_display}</span>
+                <span class="meta-text" id="telemetry-time">Thresh: {int(round(CONFIDENCE_THRESHOLD * 100))}% | Half-Kelly | {retrain_display}</span>
             </div>
             <div class="scanner-grid" id="scanner-grid">
                 {scanner_cards_html}
@@ -1005,7 +1006,7 @@ class LocalPaperBroker:
                         probEl.textContent = probPct + '%';
                         if (barEl) {{
                             barEl.style.width = Math.min(Math.max(probPct, 5), 100) + '%';
-                            if (info.win_prob >= (info.threshold || 0.54)) {{
+                            if (info.win_prob >= (info.threshold || {CONFIDENCE_THRESHOLD:.2f})) {{
                                 barEl.className = 'prob-bar above';
                             }} else {{
                                 barEl.className = 'prob-bar below';
@@ -1025,7 +1026,8 @@ class LocalPaperBroker:
                 }}
                 const timeEl = document.getElementById('telemetry-time');
                 if (timeEl && data.timestamp) {{
-                    timeEl.textContent = 'Last Scan: ' + new Date(data.timestamp).toLocaleTimeString() + ' | Threshold: 54%';
+                    const activeThresh = Math.round((data.threshold || {CONFIDENCE_THRESHOLD:.2f}) * 100);
+                    timeEl.textContent = 'Last Scan: ' + new Date(data.timestamp).toLocaleTimeString() + ' | Threshold: ' + activeThresh + '%';
                 }}
             }} catch (err) {{
                 console.debug('Telemetry auto-refresh error:', err);

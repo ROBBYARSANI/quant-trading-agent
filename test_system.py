@@ -34,6 +34,7 @@ from config import (
     RETRAIN_HISTORY_FILE,
     SENTIMENT_BOOST_THRESHOLD,
     SENTIMENT_BOOST_VALUE,
+    SENTIMENT_LEXICON_VETO_THRESHOLD,
     SENTIMENT_VETO_THRESHOLD,
     SUCCESS_SAMPLE_WEIGHT,
     is_crypto_symbol,
@@ -87,7 +88,9 @@ class TestQuantitativeTradingAgent(unittest.TestCase):
         self.assertEqual(MAX_POSITION_EXPOSURE, 0.50)
         self.assertEqual(MAX_DAILY_DRAWDOWN, 0.03)
         self.assertEqual(HORIZON_BARS, 24)
-        self.assertEqual(CONFIDENCE_THRESHOLD, 0.54)
+        self.assertEqual(CONFIDENCE_THRESHOLD, 0.42)
+        self.assertEqual(SENTIMENT_VETO_THRESHOLD, -0.15)
+        self.assertEqual(SENTIMENT_LEXICON_VETO_THRESHOLD, -0.40)
 
         # Crypto fee default must be 15 bps (0.0015)
         self.assertEqual(DEFAULT_SLIPPAGE_BPS, 0.0015)
@@ -175,10 +178,12 @@ class TestQuantitativeTradingAgent(unittest.TestCase):
     def test_05_model_engine_training_and_inference(self):
         """Test chronological model training, artifact persistence, and inference."""
         labeled_df = create_triple_barrier_labels(self.feature_df)
-        model = QuantModel(confidence_threshold=CONFIDENCE_THRESHOLD)
+        test_mpath = Path(self.temp_dir) / "test05_model.joblib"
+        test_rhist = Path(self.temp_dir) / "test05_retrain.json"
+        model = QuantModel(confidence_threshold=CONFIDENCE_THRESHOLD, model_path=str(test_mpath))
 
         # Train with chronological split
-        metrics = model.train_and_evaluate(labeled_df, train_ratio=0.80)
+        metrics = model.train_and_evaluate(labeled_df, train_ratio=0.80, retrain_history_file=test_rhist)
         self.assertIn("test_roc_auc", metrics)
         self.assertIn("confident_win_rate_pct", metrics)
 
@@ -194,8 +199,10 @@ class TestQuantitativeTradingAgent(unittest.TestCase):
     def test_06_backtester_simulation(self):
         """Test backtester execution on out-of-sample data with 15 bps slippage."""
         labeled_df = create_triple_barrier_labels(self.feature_df)
-        model = QuantModel(confidence_threshold=CONFIDENCE_THRESHOLD)
-        model.train_and_evaluate(labeled_df, train_ratio=0.80)
+        test_mpath = Path(self.temp_dir) / "test06_model.joblib"
+        test_rhist = Path(self.temp_dir) / "test06_retrain.json"
+        model = QuantModel(confidence_threshold=CONFIDENCE_THRESHOLD, model_path=str(test_mpath))
+        model.train_and_evaluate(labeled_df, train_ratio=0.80, retrain_history_file=test_rhist)
 
         split_idx = int(len(self.feature_df) * 0.80)
         test_df = self.feature_df.iloc[split_idx:].copy()
@@ -252,6 +259,30 @@ class TestQuantitativeTradingAgent(unittest.TestCase):
         self.assertTrue(is_approved_n)
         self.assertAlmostEqual(adj_prob_n, 0.65, places=2)
         self.assertIn("APPROVED", reason_n)
+
+        # 4. Differentiated Veto Threshold: Mildly negative news (-0.33)
+        # Lexicon Fallback (-0.40 threshold) must APPROVE, while active FinBERT (-0.15 threshold) must VETO
+        mild_bearish_news = [
+            "Bitcoin drops slightly during morning trading session.",
+            "Federal Reserve meeting concludes with interest rate policy announcement.",
+            "Cryptocurrency trading volume stabilizes during weekend market session.",
+        ]
+        sent_filter._finbert_pipeline = "LEXICON_FALLBACK"
+        is_approved_lex, _, score_lex, reason_lex = sent_filter.evaluate_sentiment_gate(
+            symbol="BTC/USD", base_win_prob=0.50, sample_news=mild_bearish_news
+        )
+        self.assertAlmostEqual(score_lex, -1.0 / 3.0, places=2)
+        self.assertTrue(is_approved_lex)
+        self.assertIn("Lexicon Fallback", reason_lex)
+
+        # Simulate active FinBERT returning mild negative (-0.25 < -0.15)
+        sent_filter._finbert_pipeline = lambda text: [{"label": "negative", "score": 0.25}]
+        is_approved_fb, _, score_fb, reason_fb = sent_filter.evaluate_sentiment_gate(
+            symbol="BTC/USD", base_win_prob=0.50, sample_news=mild_bearish_news
+        )
+        self.assertAlmostEqual(score_fb, -0.25, places=2)
+        self.assertFalse(is_approved_fb)
+        self.assertIn("VETOED [FinBERT]", reason_fb)
 
     def test_08_crypto_client_side_bracket_manager(self):
         """Test Client-Side Bracket Manager: Trailing Breakeven, Stop Loss, Take Profit, Time Barrier."""
@@ -399,6 +430,7 @@ class TestQuantitativeTradingAgent(unittest.TestCase):
 
         # 4. Test model training with experience replay and Quality Gatekeeper
         test_model_path = Path(self.temp_dir) / "test_replay_model.joblib"
+        test_retrain_hist = Path(self.temp_dir) / "test09_retrain_history.json"
         model = QuantModel(
             confidence_threshold=CONFIDENCE_THRESHOLD,
             model_path=str(test_model_path),
@@ -409,6 +441,7 @@ class TestQuantitativeTradingAgent(unittest.TestCase):
             train_ratio=0.80,
             symbol="BTC-USD",
             trade_history=mock_trades,
+            retrain_history_file=test_retrain_hist,
         )
 
         self.assertIn("retrain_status", metrics)
@@ -417,7 +450,7 @@ class TestQuantitativeTradingAgent(unittest.TestCase):
         self.assertTrue(test_model_path.exists())
 
         # Verify audit logging in retrain_history.json
-        history = load_retrain_history()
+        history = load_retrain_history(history_file=test_retrain_hist)
         self.assertIsInstance(history, list)
         self.assertGreaterEqual(len(history), 1)
         self.assertIn("experience_replay", history[-1])
@@ -520,6 +553,128 @@ class TestQuantitativeTradingAgent(unittest.TestCase):
 
         # Now is_retrain_due should be False: attempt is fresh and new trades (15 - 15 = 0) < 10
         self.assertFalse(model.is_retrain_due(max_age_days=7, min_new_trades=10, retrain_history_file=hist_path, trade_history_file=trades_path))
+
+    def test_11_no_double_sell_on_trailing_update(self):
+        """
+        Regression test for Double-Sell Bug:
+        Simulates 2 open positions where Asset 1 hits TP/SL and Asset 2 triggers Trailing Breakeven
+        in the same cycle. Verifies Asset 1 is permanently removed from active_crypto_positions.json
+        and cannot be sold twice on subsequent ticks.
+        """
+        pos_file = Path(self.temp_dir) / "test11_positions.json"
+        acc_file = Path(self.temp_dir) / "test11_account.json"
+        hist_file = Path(self.temp_dir) / "test11_history.csv"
+        dash_file = Path(self.temp_dir) / "test11_dashboard.html"
+        tele_file = Path(self.temp_dir) / "test11_telemetry.json"
+
+        bot = AlpacaExecutionBot(
+            symbols=["ETH-USD", "SOL-USD"],
+            positions_file=pos_file,
+            account_file=acc_file,
+            history_file=hist_file,
+            dashboard_file=dash_file,
+            telemetry_file=tele_file,
+        )
+
+        # Open Position 1: ETH-USD (Entry=2000, ATR=50 -> SL=1925, Halfway BE=2075, TP=2150)
+        bot.execute_crypto_order(
+            qty=10.0,
+            entry_price=2000.0,
+            stop_loss_price=1925.0,
+            take_profit_price=2150.0,
+            atr=50.0,
+            symbol="ETH-USD",
+        )
+        # Open Position 2: SOL-USD (Entry=100, ATR=3 -> SL=95.5, Halfway BE=104.5, TP=109)
+        bot.execute_crypto_order(
+            qty=100.0,
+            entry_price=100.0,
+            stop_loss_price=95.5,
+            take_profit_price=109.0,
+            atr=3.0,
+            symbol="SOL-USD",
+        )
+
+        positions_before = bot.local_broker._load_positions()
+        self.assertEqual(set(positions_before.keys()), {"ETH-USD", "SOL-USD"})
+
+        # Cycle 1: ETH-USD hits Take Profit (2160 >= 2150), SOL-USD hits Trailing Breakeven (105 >= 104.5)
+        closed_cycle_1 = bot.manage_open_crypto_positions(
+            current_price={"ETH-USD": 2160.0, "SOL-USD": 105.0}
+        )
+        self.assertEqual(len(closed_cycle_1), 1)
+        self.assertEqual(closed_cycle_1[0]["symbol"], "ETH-USD")
+        self.assertEqual(closed_cycle_1[0]["reason"], "TAKE_PROFIT")
+
+        # Verify ETH-USD was NOT resurrected in active_crypto_positions.json by SOL-USD's breakeven save
+        positions_after = bot.local_broker._load_positions()
+        self.assertNotIn("ETH-USD", positions_after)
+        self.assertIn("SOL-USD", positions_after)
+        self.assertTrue(positions_after["SOL-USD"]["breakeven_triggered"])
+        self.assertEqual(positions_after["SOL-USD"]["stop_loss_price"], 100.0)
+
+        # Cycle 2: Immediate follow-up tick with same prices must NOT double-sell ETH-USD
+        closed_cycle_2 = bot.manage_open_crypto_positions(
+            current_price={"ETH-USD": 2160.0, "SOL-USD": 105.0}
+        )
+        self.assertEqual(len(closed_cycle_2), 0)
+        self.assertEqual(count_closed_trades(hist_file), 1)
+
+        # Verify exact cash accounting (Initial $100,000 - SOL buy cost + ETH net PnL)
+        acc = bot.local_broker._load_account()
+        eth_buy_cost = 20000.0 * (1.0 + DEFAULT_SLIPPAGE_BPS)
+        sol_buy_cost = 10000.0 * (1.0 + DEFAULT_SLIPPAGE_BPS)
+        eth_sell_proceeds = 21600.0 * (1.0 - DEFAULT_SLIPPAGE_BPS)
+        expected_cash = 100000.0 - eth_buy_cost - sol_buy_cost + eth_sell_proceeds
+        self.assertAlmostEqual(acc["cash"], expected_cash, places=2)
+
+    def test_12_experience_replay_no_oos_leakage(self):
+        """
+        Verifies Experience Replay strictly filters feedback trades to the training window
+        (timestamp <= X_train.index.max()) and never injects X_test samples into X_train.
+        """
+        labeled_df = create_triple_barrier_labels(self.feature_df)
+        split_idx = int(len(labeled_df) * 0.80)
+
+        train_trade_dt = labeled_df.index[20]
+        oos_trade_dt = labeled_df.index[split_idx + 20]  # Strictly inside OOS test set
+
+        mock_trades = [
+            {
+                "symbol": "BTC-USD",
+                "entry_timestamp": train_trade_dt.isoformat(),
+                "exit_timestamp": (train_trade_dt + timedelta(hours=2)).isoformat(),
+                "net_pnl": -300.0,
+                "reason": "STOP_LOSS",
+            },
+            {
+                "symbol": "BTC-USD",
+                "entry_timestamp": oos_trade_dt.isoformat(),
+                "exit_timestamp": (oos_trade_dt + timedelta(hours=2)).isoformat(),
+                "net_pnl": +600.0,
+                "reason": "TAKE_PROFIT",
+            },
+        ]
+
+        test_model_path = Path(self.temp_dir) / "test12_no_leak_model.joblib"
+        test_retrain_hist = Path(self.temp_dir) / "test12_retrain_history.json"
+        model = QuantModel(
+            confidence_threshold=CONFIDENCE_THRESHOLD,
+            model_path=str(test_model_path),
+            symbol="BTC-USD",
+        )
+        metrics = model.train_and_evaluate(
+            df=labeled_df,
+            train_ratio=0.80,
+            symbol="BTC-USD",
+            trade_history=mock_trades,
+            retrain_history_file=test_retrain_hist,
+        )
+
+        # Only the training-window trade may be matched; OOS trade must be excluded
+        self.assertEqual(metrics["trades_matched"], 1)
+        self.assertGreaterEqual(metrics["penalties_count"], 1)
+        self.assertEqual(metrics["boosts_count"], 0)
 
 
 if __name__ == "__main__":

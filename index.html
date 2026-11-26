@@ -217,8 +217,8 @@
                 </div>
             </div>
             <div style="text-align: right;">
-                <div class="meta-text">LAST REFRESH: 2026-11-26 01:46:05 UTC</div>
-                <div class="meta-text" style="color: #10b981; margin-top: 4px;">SELF-LEARNING AI: ACCEPTED (2026-11-22 12:32 UTC &bull; 36 Penalties)</div>
+                <div class="meta-text">LAST REFRESH: 2026-11-26 07:30:25 UTC</div>
+                <div class="meta-text" style="color: #10b981; margin-top: 4px;">SELF-LEARNING AI: ACCEPTED (2026-11-26 07:30 UTC &bull; 0 Penalties)</div>
                 <div class="meta-text" style="color: var(--success); margin-top: 4px;">CIRCUIT BREAKER: ARMED (-3.0%)</div>
             </div>
         </header>
@@ -255,7 +255,7 @@
                     <div class="pulse-dot" style="width: 8px; height: 8px; background: #38bdf8; box-shadow: 0 0 8px #38bdf8;"></div>
                     <span>Live Market Scanner &amp; AI Telemetry (BTC, ETH, SOL)</span>
                 </div>
-                <span class="meta-text" id="telemetry-time">Thresh: 54% | Half-Kelly | Last Retrain: 2026-11-22 12:32 UTC (ACCEPTED &bull; 14 Trades Replayed)</span>
+                <span class="meta-text" id="telemetry-time">Thresh: 42% | Half-Kelly | Last Retrain: 2026-11-26 07:30 UTC (ACCEPTED &bull; 0 Trades Replayed)</span>
             </div>
             <div class="scanner-grid" id="scanner-grid">
                 
@@ -600,7 +600,7 @@
                         probEl.textContent = probPct + '%';
                         if (barEl) {
                             barEl.style.width = Math.min(Math.max(probPct, 5), 100) + '%';
-                            if (info.win_prob >= (info.threshold || 0.54)) {
+                            if (info.win_prob >= (info.threshold || 0.42)) {
                                 barEl.className = 'prob-bar above';
                             } else {
                                 barEl.className = 'prob-bar below';
@@ -620,7 +620,8 @@
                 }
                 const timeEl = document.getElementById('telemetry-time');
                 if (timeEl && data.timestamp) {
-                    timeEl.textContent = 'Last Scan: ' + new Date(data.timestamp).toLocaleTimeString() + ' | Threshold: 54%';
+                    const activeThresh = Math.round((data.threshold || 0.42) * 100);
+                    timeEl.textContent = 'Last Scan: ' + new Date(data.timestamp).toLocaleTimeString() + ' | Threshold: ' + activeThresh + '%';
                 }
             } catch (err) {
                 console.debug('Telemetry auto-refresh error:', err);

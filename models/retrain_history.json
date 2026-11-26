@@ -1,6 +1,6 @@
 {
-  "last_attempt_timestamp": "2026-11-22T12:32:13.915033+00:00",
-  "last_accepted_timestamp": "2026-11-22T12:32:13.915033+00:00",
+  "last_attempt_timestamp": "2026-11-26T07:30:25.257485+00:00",
+  "last_accepted_timestamp": "2026-11-26T07:30:25.257485+00:00",
   "last_status": "ACCEPTED",
   "total_closed_trades": 37,
   "history": [
@@ -656,6 +656,72 @@
       },
       "last_attempt_timestamp": "2026-11-22T12:32:13.915033+00:00",
       "last_accepted_timestamp": "2026-11-22T12:32:13.915033+00:00"
+    },
+    {
+      "timestamp": "2026-11-26T07:30:20.027640+00:00",
+      "symbol": "BTC-USD",
+      "status": "ACCEPTED",
+      "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5199 vs Old: 0.5199)",
+      "total_closed_trades": 37,
+      "metrics": {
+        "new_roc_auc": 0.5199,
+        "old_roc_auc": 0.5199,
+        "new_precision": 0.4351,
+        "old_precision": 0.4351,
+        "confident_trade_signals": 154,
+        "confident_win_rate_pct": 43.51
+      },
+      "experience_replay": {
+        "trades_matched": 0,
+        "penalties_3x": 0,
+        "boosts_1_5x": 0
+      },
+      "last_attempt_timestamp": "2026-11-26T07:30:20.027640+00:00",
+      "last_accepted_timestamp": "2026-11-26T07:30:20.027640+00:00"
+    },
+    {
+      "timestamp": "2026-11-26T07:30:22.263335+00:00",
+      "symbol": "ETH-USD",
+      "status": "ACCEPTED",
+      "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.6432 vs Old: 0.6432)",
+      "total_closed_trades": 37,
+      "metrics": {
+        "new_roc_auc": 0.6432,
+        "old_roc_auc": 0.6432,
+        "new_precision": 0.4599,
+        "old_precision": 0.4599,
+        "confident_trade_signals": 374,
+        "confident_win_rate_pct": 45.99
+      },
+      "experience_replay": {
+        "trades_matched": 0,
+        "penalties_3x": 0,
+        "boosts_1_5x": 0
+      },
+      "last_attempt_timestamp": "2026-11-26T07:30:22.263335+00:00",
+      "last_accepted_timestamp": "2026-11-26T07:30:22.263335+00:00"
+    },
+    {
+      "timestamp": "2026-11-26T07:30:25.257485+00:00",
+      "symbol": "SOL-USD",
+      "status": "ACCEPTED",
+      "reason": "ACCEPTED: Valid Out-of-Sample Performance (ROC: 0.5679 vs Old: 0.5679)",
+      "total_closed_trades": 37,
+      "metrics": {
+        "new_roc_auc": 0.5679,
+        "old_roc_auc": 0.5679,
+        "new_precision": 0.3763,
+        "old_precision": 0.3763,
+        "confident_trade_signals": 93,
+        "confident_win_rate_pct": 37.63
+      },
+      "experience_replay": {
+        "trades_matched": 0,
+        "penalties_3x": 0,
+        "boosts_1_5x": 0
+      },
+      "last_attempt_timestamp": "2026-11-26T07:30:25.257485+00:00",
+      "last_accepted_timestamp": "2026-11-26T07:30:25.257485+00:00"
     }
   ]
 }

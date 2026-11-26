@@ -20,6 +20,7 @@ import yfinance as yf
 from config import (
     SENTIMENT_BOOST_THRESHOLD,
     SENTIMENT_BOOST_VALUE,
+    SENTIMENT_LEXICON_VETO_THRESHOLD,
     SENTIMENT_VETO_THRESHOLD,
     SYMBOL,
     setup_logger,
@@ -60,10 +61,12 @@ class CryptoSentimentFilter:
     def __init__(
         self,
         veto_threshold: float = SENTIMENT_VETO_THRESHOLD,
+        lexicon_veto_threshold: float = SENTIMENT_LEXICON_VETO_THRESHOLD,
         boost_threshold: float = SENTIMENT_BOOST_THRESHOLD,
         boost_value: float = SENTIMENT_BOOST_VALUE,
     ):
         self.veto_threshold = veto_threshold
+        self.lexicon_veto_threshold = lexicon_veto_threshold
         self.boost_threshold = boost_threshold
         self.boost_value = boost_value
         self._finbert_pipeline = None
@@ -241,17 +244,28 @@ class CryptoSentimentFilter:
     ) -> Tuple[bool, float, float, str]:
         """
         Master Gatekeeper Decision:
-        - composite_score < -0.15 -> VETO (Cancel BUY signal)
+        - Differentiated Veto Threshold:
+          * FinBERT (PyTorch) active : composite_score < -0.15 -> VETO
+          * Lexicon Fallback active  : composite_score < -0.40 -> VETO
         - composite_score > +0.25 -> BOOST (win_prob + 0.03)
         - otherwise               -> APPROVED (Unmodified win_prob)
         """
         news = sample_news if sample_news is not None else self.fetch_recent_news(symbol=symbol)
-        score, _ = self.analyze_sentiment(news)
+        score, breakdown = self.analyze_sentiment(news)
 
-        if score < self.veto_threshold:
+        pipe = self._load_finbert_pipeline()
+        finbert_active = (
+            pipe != "LEXICON_FALLBACK"
+            and callable(pipe)
+            and (not breakdown or any(item.get("engine") == "finbert" for item in breakdown))
+        )
+        active_veto_threshold = self.veto_threshold if finbert_active else self.lexicon_veto_threshold
+        engine_label = "FinBERT" if finbert_active else "Lexicon Fallback"
+
+        if score < active_veto_threshold:
             reason = (
-                f"VETOED: Composite sentiment score ({score:+.3f}) is below "
-                f"veto threshold ({self.veto_threshold:+.2f}). Signal canceled due to FUD/negative news."
+                f"VETOED [{engine_label}]: Composite sentiment score ({score:+.3f}) is below "
+                f"veto threshold ({active_veto_threshold:+.2f}). Signal canceled due to FUD/negative news."
             )
             logger.warning(reason)
             return False, base_win_prob, score, reason
@@ -259,7 +273,7 @@ class CryptoSentimentFilter:
         if score > self.boost_threshold:
             boosted_prob = min(base_win_prob + self.boost_value, 0.99)
             reason = (
-                f"BOOSTED: Composite sentiment score ({score:+.3f}) exceeds "
+                f"BOOSTED [{engine_label}]: Composite sentiment score ({score:+.3f}) exceeds "
                 f"boost threshold ({self.boost_threshold:+.2f}). Win probability boosted from "
                 f"{base_win_prob:.4f} to {boosted_prob:.4f} (+{self.boost_value:.2f})."
             )
@@ -267,8 +281,8 @@ class CryptoSentimentFilter:
             return True, boosted_prob, score, reason
 
         reason = (
-            f"APPROVED: Composite sentiment score ({score:+.3f}) is neutral "
-            f"[{self.veto_threshold:+.2f}, {self.boost_threshold:+.2f}]. Unmodified win_prob ({base_win_prob:.4f})."
+            f"APPROVED [{engine_label}]: Composite sentiment score ({score:+.3f}) is within acceptable range "
+            f"[{active_veto_threshold:+.2f}, {self.boost_threshold:+.2f}]. Unmodified win_prob ({base_win_prob:.4f})."
         )
         logger.info(reason)
         return True, base_win_prob, score, reason

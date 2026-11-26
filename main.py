@@ -151,9 +151,7 @@ def run_live_mode(
 
     if run_once:
         logger.info("Executing single pulse (--once)...")
-        # 1. Fast tick: manage existing open positions
-        closed = bot.manage_open_crypto_positions()
-        # 2. Slow tick: scan target assets for new entries
+        # Execute full cycle (position management + signal scan) once
         result = bot.run_cycle(
             model=models,
             sentiment_filter=sentiment_filter,
